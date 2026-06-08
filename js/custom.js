@@ -1,6 +1,6 @@
 /* =========================================
    「櫻之丘」學園专属 
-   方案A完全体：内嵌全屏动态视频背景 ➔ 网页全交互 ➔ 纯日文真白芯台词系统
+   方案A完全体：根图层视差视频底衬 ➔ 网页全交互 ➔ 纯日文真白芯台词系统
    =========================================
 */
 
@@ -10,7 +10,7 @@ if (window.CONFIG) {
   if (window.CONFIG.slogan) window.CONFIG.slogan.typed = false;
 }
 
-console.log("%c🌸 [櫻之丘學園] custom.js 动态内嵌背景视频系统已完美通网！", "color: #ff66b2; font-weight: bold; font-size: 14px;");
+console.log("%c🌸 [櫻之丘學園] custom.js 绝对底层画布视频背景系统通网！", "color: #ff66b2; font-weight: bold; font-size: 14px;");
 
 document.addEventListener("DOMContentLoaded", function () {
   if (window.CONFIG) {
@@ -31,7 +31,7 @@ document.addEventListener("DOMContentLoaded", function () {
       logoHtml: `
         <div class="custom-logo-container theme-pink">
           <div class="logo-prefix">
-            <span class="char-high">編</span><span class="char-low">い</span>
+            <span class="char-high">紅</span><span class="char-low">い</span>
             <span class="char-high">瞳</span><span class="char-low">に</span>
             <span class="char-high">映</span><span class="char-low">る</span>
           </div>
@@ -93,54 +93,56 @@ document.addEventListener("DOMContentLoaded", function () {
     subtitleEl.textContent = activeTheme.quote;
 
     if (isHome) {
-      // 🏠 如果在首页：台词初始隐藏，等待点击进入瞬间绽放
+      // 🏠 如果在首页：台词初始隐藏
       subtitleEl.style.opacity = "0";
 
-      // 🔍 核心黑魔法：寻找 Fluid 主题首页的大背景看板元素
-      const bannerEl = document.querySelector('.banner') || document.getElementById('banner');
-      
-      if (bannerEl) {
-        // 动态创建内嵌式视频背景容器
-        const videoContainer = document.createElement('div');
-        videoContainer.id = 'custom-video-bg-container';
-        videoContainer.innerHTML = `<video id="intro-player" src="${activeTheme.videoSrc}" playsinline></video>`;
+      // 👑 核心重构：将视频作为独立节点直接挂载到 body 根躯干上，化身真正的全景画布底层
+      const videoContainer = document.createElement('div');
+      videoContainer.id = 'custom-video-bg-container';
+      videoContainer.innerHTML = `<video id="intro-player" src="${activeTheme.videoSrc}" playsinline></video>`;
+      document.body.appendChild(videoContainer);
+
+      // 🎬 创建最顶层的 Galgame 专属启动点击幕布
+      const startOverlay = document.createElement('div');
+      startOverlay.id = 'custom-start-overlay';
+      startOverlay.innerHTML = `<div class="start-btn-text">「 點擊進入セカイ 」</div>`;
+      document.body.appendChild(startOverlay);
+
+      const player = document.getElementById('intro-player');
+
+      // 📡 监听：点击进入
+      startOverlay.addEventListener('click', function () {
+        startOverlay.classList.add('start-curtain-fade');
         
-        // 💥 关键点：把视频作为第一子节点塞入 Banner 内部，直接化身真正的网页背景！
-        bannerEl.insertBefore(videoContainer, bannerEl.firstChild);
+        // 开启环境光透镜：让 body 染上视频激活类，强制上方原厂遮挡墙透明化
+        document.body.classList.add('video-active');
+        
+        // 原声大碟震撼起航
+        player.muted = false;
+        player.volume = 1.0;
+        player.play().catch(err => console.log("播放被拦截:", err));
 
-        // 🎬 创建最顶层的 Galgame 专属启动点击幕布
-        const startOverlay = document.createElement('div');
-        startOverlay.id = 'custom-start-overlay';
-        startOverlay.innerHTML = `<div class="start-btn-text">「 點擊進入セカイ 」</div>`;
-        document.body.appendChild(startOverlay);
+        // 首页真·白芯极光台词破雾入场绽放
+        subtitleEl.style.opacity = ""; 
+        subtitleEl.className = activeTheme.class + " subtitle-reveal";
 
-        const player = document.getElementById('intro-player');
+        setTimeout(() => startOverlay.remove(), 1000);
+      });
 
-        // 📡 监听：点击进入セカイ
-        startOverlay.addEventListener('click', function () {
-          startOverlay.classList.add('start-curtain-fade');
-          
-          // 原声大碟轰鸣起航
-          player.muted = false;
-          player.volume = 1.0;
-          player.play().catch(err => console.log("播放被拦截:", err));
-
-          // ✨ 满足交代：上面的导航栏和UI完全存在，白芯句子也在此刻同步破雾入场绽放！
-          subtitleEl.style.opacity = ""; 
-          subtitleEl.className = activeTheme.class + " subtitle-reveal";
-
-          setTimeout(() => startOverlay.remove(), 1000);
-        });
-
-        // 📡 监听：视频播放完毕瞬间，执行内嵌溶解淡出，自然露出原本的静态背景图
-        player.addEventListener('ended', function () {
-          videoContainer.classList.add('video-bg-dissolve-out');
-          setTimeout(() => videoContainer.remove(), 1500);
-        });
-      }
+      // 📡 监听：视频播放完毕瞬间
+      player.addEventListener('ended', function () {
+        // 视频在最底层执行水雾模糊溶解
+        videoContainer.classList.add('video-bg-dissolve-out');
+        
+        // 过渡完毕后，彻底销毁视频节点并卸载透明类，原厂静态大图满状态复活
+        setTimeout(() => {
+          videoContainer.remove();
+          document.body.classList.remove('video-active');
+        }, 1500);
+      });
 
     } else {
-      // 🏷️ 如果在分类、标签等非首页页面：视频与幕布彻底锁死，台词以对应的霓虹白芯直接常驻显示
+      // 🏷️ 如果在非首页页面：视频与幕布彻底锁死，台词直接显示
       subtitleEl.className = activeTheme.class;
     }
   }
