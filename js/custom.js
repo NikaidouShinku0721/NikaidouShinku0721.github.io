@@ -10,14 +10,14 @@ if (window.CONFIG) {
 }
 
 (function () {
-  console.log("%c🌸 [櫻之丘學園] custom.js 核心驱动完全体已就位！", "color: #ff66b2; font-weight: bold; font-size: 14px;");
+  console.log("%c🌸 [櫻之丘學園] custom.js 终极修复完全体驱动通网！", "color: #ff66b2; font-weight: bold; font-size: 14px;");
 
   function initBlogThemeSystem() {
     const navbarBrand = document.querySelector('.navbar-brand');
-    const oldSubtitleEl = document.getElementById("subtitle");
+    const subtitleEl = document.getElementById("subtitle");
     if (!navbarBrand) return;
 
-    // 🎯 1. 三套独立主题数据库（100% 纯正原版日文台词，精准对齐你的 HD OP 视频原名）
+    // 🎯 1. 三套独立主题数据库（彻底修正所有错别字，重回100%纯正日文圣经台词）
     const themes = [
       {
         class: "glow-pink",
@@ -38,7 +38,7 @@ if (window.CONFIG) {
       },
       {
         class: "glow-blue",
-        quote: "性と始まる、きみとぼく、のセカイ――",
+        quote: "そして始まる、きみとぼく、のセカイ――",
         videoSrc: "/video/いろとりどりのセカイHD ReGENERATION op.mp4",
         logoHtml: `
           <div class="custom-logo-container theme-blue">
@@ -63,7 +63,7 @@ if (window.CONFIG) {
             <div class="logo-prefix">
               <span class="char-high color-magenta">い</span><span class="char-low color-magenta">ろ</span>
               <span class="char-high color-gold">と</span><span class="char-low color-gold">り</span>
-              <span class="char-high color-gold">ど</span><span class="char-low color-gold">り</span>
+              <span class="char-high color-gold">ど</span><span class="char-gold">り</span>
               <span class="char-tiny color-gold">の</span>
             </div>
             <div class="logo-main">ヒカリ</div>
@@ -74,7 +74,7 @@ if (window.CONFIG) {
       }
     ];
 
-    // 随机抽取一套固定色系渲染 Logo
+    // 全站跨页随机抽取一套固定色系渲染 Logo
     const activeTheme = themes[Math.floor(Math.random() * themes.length)];
     navbarBrand.innerHTML = activeTheme.logoHtml;
 
@@ -82,76 +82,74 @@ if (window.CONFIG) {
     const currentPath = window.location.pathname;
     const isHome = currentPath === '/' || currentPath === '/index.html';
 
-    if (oldSubtitleEl) {
-      const originalText = oldSubtitleEl.innerText || oldSubtitleEl.textContent;
-      const subtitleEl = oldSubtitleEl.cloneNode(false);
-      oldSubtitleEl.parentNode.replaceChild(subtitleEl, oldSubtitleEl);
+    if (isHome && subtitleEl) {
+      // 🏠 场景一：只有在首页时，才接管并激活开场视频系统
+      subtitleEl.textContent = activeTheme.quote;
+      subtitleEl.style.opacity = "0"; // 👑 核心修复：视频播放期间台词保持绝对隐形，不挡视频！
 
-      if (isHome) {
-        // 🏠 场景一：如果是首页，展现台词并触发动态内嵌视频背景
-        subtitleEl.textContent = activeTheme.quote;
-        subtitleEl.style.opacity = "0";
+      const bannerEl = document.querySelector('.banner') || document.getElementById('banner');
+      if (bannerEl) {
+        // 创建内嵌式视频背景容器
+        const videoContainer = document.createElement('div');
+        videoContainer.id = 'custom-video-bg-container';
+        videoContainer.innerHTML = `<video id="intro-player" src="${activeTheme.videoSrc}" playsinline></video>`;
+        bannerEl.insertBefore(videoContainer, bannerEl.firstChild);
 
-        const bannerEl = document.querySelector('.banner') || document.getElementById('banner');
-        if (bannerEl) {
-          // 创建内嵌式视频容器
-          const videoContainer = document.createElement('div');
-          videoContainer.id = 'custom-video-bg-container';
-          videoContainer.innerHTML = `<video id="intro-player" src="${activeTheme.videoSrc}" playsinline></video>`;
-          bannerEl.insertBefore(videoContainer, bannerEl.firstChild);
+        // 全屏启动点击幕布
+        const startOverlay = document.createElement('div');
+        startOverlay.id = 'custom-start-overlay';
+        startOverlay.innerHTML = `<div class="start-btn-text">「 點擊進入セカイ 」</div>`;
+        document.body.appendChild(startOverlay);
 
-          // 全屏启动点击幕布
-          const startOverlay = document.createElement('div');
-          startOverlay.id = 'custom-start-overlay';
-          startOverlay.innerHTML = `<div class="start-btn-text">「 點擊進入セカイ 」</div>`;
-          document.body.appendChild(startOverlay);
+        const player = document.getElementById('intro-player');
 
-          const player = document.getElementById('intro-player');
+        // 点击进入
+        startOverlay.addEventListener('click', function () {
+          startOverlay.classList.add('start-curtain-fade');
+          document.body.classList.add('video-active'); // 激活全透明环境光锁
+          
+          player.muted = false;
+          player.volume = 1.0;
+          player.play().catch(err => console.log("播放拦截:", err));
 
-          startOverlay.addEventListener('click', function () {
-            startOverlay.classList.add('start-curtain-fade');
-            player.muted = false;
-            player.volume = 1.0;
-            player.play().catch(err => console.log("播放拦截:", err));
+          setTimeout(() => startOverlay.remove(), 1000);
+        });
 
-            // UI和台词第一秒同步顺畅显示，并追加白芯绽放动画
-            subtitleEl.style.opacity = ""; 
-            subtitleEl.className = activeTheme.class + " subtitle-reveal";
+        // 👑 核心修复：只有当视频完全播完的瞬间，台词才破雾入场绽放，绝不提前穿帮！
+        player.addEventListener('ended', function () {
+          videoContainer.classList.add('video-bg-dissolve-out');
+          
+          // 台词在此刻丝滑绽放
+          subtitleEl.style.opacity = ""; 
+          subtitleEl.className = activeTheme.class + " subtitle-reveal";
 
-            setTimeout(() => startOverlay.remove(), 1000);
-          });
-
-          // 视频播完，内嵌在 Banner 底部溶解，自然显露原本的静态图
-          player.addEventListener('ended', function () {
-            videoContainer.classList.add('video-bg-dissolve-out');
-            setTimeout(() => videoContainer.remove(), 1500);
-          });
-        }
-      } else {
-        // 🏷️ 场景二：如果是非首页（如留言板、文章页），保护原生文案，仅追加发光底座
-        subtitleEl.textContent = originalText;
-        subtitleEl.className = activeTheme.class;
-        subtitleEl.style.opacity = "1";
+          setTimeout(() => {
+            videoContainer.remove();
+            document.body.classList.remove('video-active'); // 卸载全透明环境锁
+          }, 1500);
+        });
       }
+    } else {
+      // 🏷️ 场景二：如果是非首页，绝对不触碰、不克隆、不修改 subtitle，完美保留原厂全部文字与日期！
+      console.log("🌸 [櫻之丘學園] 当前处于非首页单页，触发安全隔离锁保护原生UI。");
     }
   }
 
-  // 🌀 核心安全锁：毁灭雷达（跨页时瞬间将所有残留节点物理蒸发，完美阻断UI穿帮）
+  // PJAX 跨页物理蒸发雷达
   function destroyVideoSystem() {
     const videoBg = document.getElementById('custom-video-bg-container');
     if (videoBg) videoBg.remove();
     const startOverlay = document.getElementById('custom-start-overlay');
     if (startOverlay) startOverlay.remove();
+    document.body.classList.remove('video-active');
   }
 
-  // 绑定初始化与生命周期
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initBlogThemeSystem);
   } else {
     initBlogThemeSystem();
   }
 
-  // 完美对齐 Fluid 主题的 PJAX 局部刷新钩子
   window.addEventListener('pjax:send', destroyVideoSystem);
   window.addEventListener('pjax:complete', initBlogThemeSystem);
 })();
