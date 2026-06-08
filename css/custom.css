@@ -1,15 +1,15 @@
 /* ==========================================================
-   「櫻之丘」學園专属 - 首页副标题多色霓虹真·白芯底座与晕染入场样式 
+   「櫻之丘」學園专属 - 首页副标题多色霓虹 真·白芯 底座样式 
    ==========================================================
 */
 #subtitle, .index-subtitle {
-  color: #ffffff !important; /* 👑 绝对锋利莹润的白芯字芯 */
+  color: #ffffff !important; /* 👑 满足交代：绝对锋利莹润的真白芯字芯 */
   font-weight: bold !important; font-size: 1.25rem !important;
   -webkit-font-smoothing: antialiased; letter-spacing: 1px !important; 
-  transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1), text-shadow 0.4s ease !important; /* 悬停微放大缓动 */
+  transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1), text-shadow 0.4s ease !important;
 }
 
-/* 🎯 终极发光重洗：最前面两层用极致纯白聚拢，逼迫色彩退居外圈，留下真·白芯效果 */
+/* 🎯 发光重构：前两层使用极致纯白聚拢保护，逼迫色彩退居外圈，达成完美的二次元游戏官网白芯字效果 */
 #subtitle.glow-pink, .index-subtitle.glow-pink { 
   text-shadow: 0 0 2px #fff, 0 0 5px #fff, 0 0 12px #ff66b2, 0 0 25px #ff3399, 0 0 45px #ff007f !important; 
 }
@@ -20,7 +20,7 @@
   text-shadow: 0 0 2px #fff, 0 0 5px #fff, 0 0 12px #ff9933, 0 0 25px #ff6600, 0 0 45px #cc3300 !important; 
 }
 
-/* 🎯 满足交代：首页台词鼠标悬停时，享受 1.025x 丝滑微放大交互特效 */
+/* 🎯 满足交代：首页台词鼠标悬停时，享受和左上角标题一模一样的 1.025x 丝滑微放大特效 */
 #subtitle:hover, .index-subtitle:hover {
   transform: scale(1.025) !important;
 }
@@ -35,51 +35,58 @@
   animation: subtitleBlurBloom 1.4s cubic-bezier(0.25, 1, 0.5, 1) both !important;
 }
 
-/* 🚫 终极斩杀线：彻底连根拔起隐藏 Fluid 原生遗留的所有结尾下划线光标 */
+/* 🚫 终极斩杀线：彻底隐藏 Fluid 原生遗留的所有结尾下划线光标 */
 .typed-cursor, #subtitle + .typed-cursor, .index-subtitle + .typed-cursor, #subtitle::after, .index-subtitle::after {
   display: none !important; opacity: 0 !important; visibility: hidden !important; content: none !important; width: 0 !important; height: 0 !important;
 }
 
 /* ==========================================================
-   👑 方案A：专属「點擊進入」Galgame正统全屏开场幕布样式
+   💥 核心黑魔法：内嵌式网页视频背景基底与点击穿透配置
+   ==========================================================
+*/
+#custom-video-bg-container {
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+  z-index: 1 !important; /* 恰好压在 Banner 静态背景图之上，但处于文字 UI 之下 */
+  overflow: hidden;
+  pointer-events: none; /* 👑 核心重点：允许点击穿透！鼠标可以随意点到上方的导航栏和按钮上 */
+}
+#custom-video-bg-container video {
+  width: 100%; height: 100%; object-fit: cover; pointer-events: none;
+}
+/* 💎 视频播完瞬间，对内嵌背景执行优雅的水雾溶解淡出，自然显露原本的静态大图 */
+.video-bg-dissolve-out {
+  opacity: 0 !important; filter: blur(20px) contrast(1.1) !important;
+  transition: opacity 1.5s cubic-bezier(0.25, 1, 0.5, 1), filter 1.5s ease !important;
+}
+
+/* 👑 强制把导航栏、标题、首页UI图层整体升维，确保它们浮在视频上方且完全可交互 */
+.navbar, .banner-text, .index-header, .header-inner, #navbar-col {
+  position: relative !important;
+  z-index: 10 !important; /* 绝对凌驾于视频背景层之上 */
+}
+
+/* ==========================================================
+   👑 专属「點擊進入」Galgame正统全屏开场幕布样式
    ==========================================================
 */
 #custom-start-overlay {
   position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
   z-index: 1000000 !important; /* 统治全界的最顶层 */
-  background: rgba(10, 10, 12, 0.96); /* 深邃高贵的暗夜黑底色 */
-  backdrop-filter: blur(15px); /* 极为奢华的毛玻璃虚化雾气 */
+  background: rgba(10, 10, 12, 0.96); 
+  backdrop-filter: blur(15px); 
   display: flex; align-items: center; justify-content: center; cursor: pointer;
   transition: opacity 0.8s cubic-bezier(0.25, 1, 0.5, 1);
 }
-/* 呼吸闪烁的艺术字体 */
 .start-btn-text {
-  font-family: 'PingFang SC', sans-serif; font-weight: bold; font-size: 1.65rem; color: #ffffff;
-  letter-spacing: 4px; text-shadow: 0 0 8px rgba(255, 255, 255, 0.6), 0 0 20px rgba(255, 102, 178, 0.4);
+  font-family: 'PingFang SC', sans-serif; font-weight: bold; font-size: 1.65rem; color: #ffffff; letter-spacing: 4px;
+  text-shadow: 0 0 8px rgba(255, 255, 255, 0.6), 0 0 20px rgba(255, 102, 178, 0.4);
   animation: startTextPulse 2.2s ease-in-out infinite; transition: transform 0.3s ease;
 }
 #custom-start-overlay:hover .start-btn-text {
   transform: scale(1.05); text-shadow: 0 0 12px #ffffff, 0 0 25px rgba(255, 102, 178, 0.8);
 }
-/* 幕布淡出类 */
 .start-curtain-fade { opacity: 0 !important; pointer-events: none; }
 @keyframes startTextPulse { 0%, 100% { opacity: 0.4; filter: blur(0.5px); } 50% { opacity: 1; filter: blur(0); } }
-
-/* ==========================================================
-   🎬 核心全屏视频图层与水雾溶解淡出关键帧
-   ==========================================================
-*/
-#custom-video-overlay {
-  position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 999999 !important; background: #000000;
-}
-#custom-video-overlay video {
-  width: 100%; height: 100%; object-fit: cover;
-}
-/* 💎 视频播完瞬间执行的水雾模糊溶解淡出动效 */
-.video-dissolve-out {
-  opacity: 0 !important; filter: blur(25px) contrast(1.15) !important;
-  transition: opacity 1.5s cubic-bezier(0.25, 1, 0.5, 1), filter 1.5s ease !important; pointer-events: none;
-}
 
 /* ==========================================================
    👑 全局导航栏标题排版与开场微动画
@@ -116,7 +123,7 @@
 }
 
 /* ==========================================================
-   💖 【主题一配饰】紅い瞳に映るセカイ (经典粉色)
+   💖 【各主题配饰悬浮动画】
    ==========================================================
 */
 .theme-pink .logo-prefix { color: #ff3377; text-shadow: 0 0 2px #fff, 0 0 3px #fff, 0 0 4px #fff, 0 0 10px rgba(255, 51, 119, 0.8); }
@@ -129,10 +136,6 @@
   animation: elementFadeIn 0.5s ease 0.75s both, featherFloat 4s ease-in-out infinite !important;
 }
 
-/* ==========================================================
-   💙 【主题二配饰】いろとりどりのセカイ (碧空幻蓝)
-   ==========================================================
-*/
 .theme-blue .color-darkblue { color: #002299 !important; text-shadow: 0 0 2px #fff, 0 0 4px rgba(0, 34, 153, 0.4) !important; }
 .theme-blue .color-lightblue { color: #00bfff !important; text-shadow: 0 0 2px #fff, 0 0 6px rgba(0, 191, 255, 0.8) !important; }
 .theme-blue .logo-prefix::after { content: ""; position: absolute; left: 0; bottom: -2px; width: 70px; height: 2px; background: #002299; z-index: 1; }
@@ -145,10 +148,6 @@
   animation: elementFadeIn 0.5s ease 0.75s both, featherFloat 4s ease-in-out infinite !important;
 }
 
-/* ==========================================================
-   💛 【主题三配饰】いろとりどりのヒカリ (璀璨金黄)
-   ==========================================================
-*/
 .theme-yellow .color-magenta { color: #e6005c !important; text-shadow: 0 0 2px #fff, 0 0 5px rgba(230, 0, 92, 0.6) !important; }
 .theme-yellow .color-gold { color: #ff9900 !important; text-shadow: 0 0 2px #fff, 0 0 6px rgba(255, 153, 0, 0.8) !important; }
 .theme-yellow .logo-main { color: #ffffff; text-shadow: 0 0 5px #ffffff, 0 0 12px #ffcc00, 0 0 22px #ff8800, 0 0 35px #ff4400; }
@@ -160,6 +159,5 @@
   animation: elementFadeIn 0.5s ease 0.75s both, sparkleFloat 3s ease-in-out infinite !important;
 }
 
-/* 🌀 基础物理悬浮帧 */
 @keyframes featherFloat { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-3px) rotate(2deg); } }
 @keyframes sparkleFloat { 0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.9; } 50% { transform: scale(1.06) rotate(8deg); opacity: 1; } }
