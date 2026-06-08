@@ -131,8 +131,8 @@
    「櫻之丘」學園专属 - 终极虚拟交互光标系统 (新增补丁)
    ==========================================================
 */
-/* 1. 彻底抹杀全站的系统原生无聊光标 */
-html, body, a, button, input, textarea, .navbar-brand, #subtitle {
+/* 1. 彻底抹杀全站的系统原生无聊光标（使用通配符绝对核爆！） */
+*, *::before, *::after {
   cursor: none !important;
 }
 
@@ -146,8 +146,9 @@ html, body, a, button, input, textarea, .navbar-brand, #subtitle {
 
 /* 3. 真红光标本体 👑 核心特效区 */
 #shinku-cursor {
-  width: 48px; /* 根据你抠图的大小可调整，推荐 32-48 */
-  height: 48px;
+  /* 👑 尺寸升级：直接拉满到原图的 128x128px */
+  width: 128px; 
+  height: 128px;
   background-image: url('/img/Shinku猫猫鼠标光标.png');
   background-size: contain;
   background-repeat: no-repeat;
@@ -158,7 +159,6 @@ html, body, a, button, input, textarea, .navbar-brand, #subtitle {
           drop-shadow(0 0 8px rgba(255, 102, 178, 0.8))
           drop-shadow(0 0 15px rgba(255, 51, 153, 0.6));
           
-  /* 👑 极限弹感：引入物理回弹曲线 */
   transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
 }
 

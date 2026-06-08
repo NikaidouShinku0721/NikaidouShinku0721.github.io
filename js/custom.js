@@ -169,27 +169,32 @@ document.addEventListener('DOMContentLoaded', () => {
     let mouseY = window.innerHeight / 2;
     let particles = [];
     
-    // 🌸 可以在这里自定义你点击时想飘出的“神圣词汇”
     const words = ["セカイ", "ヒカリ", "魔法", "奇跡", "約束", "櫻之丘", "永遠"];
 
-    // --- 4. 鼠标移动监听：光标跟随 & 撒星星 ---
+    // --- 4. 鼠标移动监听：光标跟随 & 撒下神圣星尘 ---
     document.addEventListener('mousemove', (e) => {
         mouseX = e.clientX;
         mouseY = e.clientY;
         
-        // 使用 translate 进行硬件加速的高性能移动
         cursorContainer.style.transform = `translate(${mouseX}px, ${mouseY}px)`;
 
-        // 随机生成掉落的星屑
-        if (Math.random() < 0.35) {
+        // 随机生成高级粒子 (控制生成频率)
+        if (Math.random() < 0.4) {
+            // 随机决定粒子类型：40%十字星，30%魔法光圈，30%星尘
+            const types = ['cross', 'cross', 'halo', 'halo', 'dust', 'dust'];
+            const type = types[Math.floor(Math.random() * types.length)];
+            
             particles.push({
+                type: type,
                 x: mouseX, 
                 y: mouseY,
                 vx: (Math.random() - 0.5) * 1.5,
-                vy: Math.random() * 1.5 + 0.5,  
-                life: 1,                        
-                size: Math.random() * 2.5 + 1.5,
-                color: Math.random() > 0.6 ? '#ffb3d9' : '#ffffff' 
+                vy: Math.random() * 1.5 + 0.2, // 缓慢下落
+                life: 1,
+                size: type === 'halo' ? Math.random() * 6 + 4 : Math.random() * 5 + 2,
+                color: Math.random() > 0.6 ? '#ff66b2' : '#ffffff', // 晶莹粉与纯白交替
+                rotation: Math.random() * Math.PI * 2, // 随机初始角度
+                rotSpeed: (Math.random() - 0.5) * 0.05 // 缓慢旋转
             });
         }
     });
@@ -201,8 +206,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const text = document.createElement('span');
         text.className = 'float-word-effect';
         text.innerText = words[Math.floor(Math.random() * words.length)];
-        text.style.left = (e.clientX + 15) + 'px';
-        text.style.top = (e.clientY + 5) + 'px';
+        text.style.left = (e.clientX + 25) + 'px'; // 考虑到光标变大了，文字往右下躲一点
+        text.style.top = (e.clientY + 25) + 'px';
         document.body.appendChild(text);
 
         setTimeout(() => text.remove(), 1200);
@@ -213,7 +218,7 @@ document.addEventListener('DOMContentLoaded', () => {
         cursor.classList.remove('cursor-clicked');
     });
 
-    // --- 7. 星屑粒子渲染循环 ---
+    // --- 7. 高级粒子渲染循环 (图形学重绘) ---
     function renderParticles() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         
@@ -221,7 +226,8 @@ document.addEventListener('DOMContentLoaded', () => {
             let p = particles[i];
             p.x += p.vx;
             p.y += p.vy;
-            p.life -= 0.015;
+            p.life -= 0.015; // 渐隐速度
+            p.rotation += p.rotSpeed; // 自转
 
             if (p.life <= 0) {
                 particles.splice(i, 1);
@@ -229,16 +235,43 @@ document.addEventListener('DOMContentLoaded', () => {
                 continue;
             }
 
+            ctx.save();
+            ctx.translate(p.x, p.y);
+            ctx.rotate(p.rotation);
             ctx.globalAlpha = p.life;
-            ctx.fillStyle = p.color;
-            ctx.shadowBlur = 6; 
+            ctx.shadowBlur = 8; 
             ctx.shadowColor = p.color;
-            
-            ctx.beginPath();
-            ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-            ctx.fill();
+            ctx.fillStyle = p.color;
+            ctx.strokeStyle = p.color;
+            ctx.lineWidth = 1.5;
+
+            // 👑 渲染十字星辉 (Cross Star)
+            if (p.type === 'cross') {
+                ctx.beginPath();
+                ctx.moveTo(0, -p.size);
+                ctx.quadraticCurveTo(0, 0, p.size, 0);
+                ctx.quadraticCurveTo(0, 0, 0, p.size);
+                ctx.quadraticCurveTo(0, 0, -p.size, 0);
+                ctx.quadraticCurveTo(0, 0, 0, -p.size);
+                ctx.fill();
+            } 
+            // 👑 渲染魔法光圈 (Halo - 随时间变大并消散)
+            else if (p.type === 'halo') {
+                ctx.beginPath();
+                // 光圈会随着生命值减少而向外扩散放大
+                let currentRadius = p.size + (1 - p.life) * 15; 
+                ctx.arc(0, 0, currentRadius, 0, Math.PI * 2);
+                ctx.stroke();
+            } 
+            // 👑 渲染基础星尘 (Dust)
+            else {
+                ctx.beginPath();
+                ctx.arc(0, 0, p.size / 2, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            ctx.restore();
         }
-        ctx.shadowBlur = 0; 
         requestAnimationFrame(renderParticles);
     }
     renderParticles();
