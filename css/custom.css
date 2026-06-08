@@ -1,15 +1,15 @@
-/* ================================/* ==========================================================
+/* ==========================================================
    「櫻之丘」學園专属 - 首页副标题多色霓虹 真·白芯 底座样式 
    ==========================================================
 */
 #subtitle, .index-subtitle {
-  color: #ffffff !important; /* 👑 纯正视觉小说质感：绝对高洁莹润的纯白字芯 */
+  color: #ffffff !important; /* 👑 核心修复：绝对高洁莹润的真纯白字芯 */
   font-weight: bold !important; font-size: 1.25rem !important;
   -webkit-font-smoothing: antialiased; letter-spacing: 1px !important; 
   transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1), text-shadow 0.4s ease !important;
 }
 
-/* 🎯 极其锋利的白芯发光：前两层死死卡住纯白保护，将霓虹色彩驱赶到10px开外向外温柔晕染 */
+/* 🎯 发光重洗：前两层卡死纯白，逼迫色彩退居12px开外，达成正统Galgame官网白芯大字特效 */
 #subtitle.glow-pink, .index-subtitle.glow-pink { 
   text-shadow: 0 0 2px #fff, 0 0 5px #fff, 0 0 12px #ff66b2, 0 0 25px #ff3399, 0 0 45px #ff007f !important; 
 }
@@ -20,7 +20,7 @@
   text-shadow: 0 0 2px #fff, 0 0 5px #fff, 0 0 12px #ff9933, 0 0 25px #ff6600, 0 0 45px #cc3300 !important; 
 }
 
-/* 🎯 满足交代：首页白芯台词鼠标悬停时，享受 1.025x 丝滑微放大交互特效 */
+/* 🎯 满足交代：台词鼠标悬停时，享受 1.025x 丝滑微放大交互特效 */
 #subtitle:hover, .index-subtitle:hover {
   transform: scale(1.025) !important;
 }
@@ -41,42 +41,36 @@
 }
 
 /* ==========================================================
-   💥 终极重构：画布级绝对根底层固定背景视频基底样式
+   💥 核心重构：内嵌于看板容器底部的安全动态背景系统（绝不溢出到卡片卡片背后）
    ==========================================================
 */
+.banner, #banner {
+  position: relative !important;
+  overflow: hidden !important; /* 👑 核心修复：剪裁一切溢出，把视频死死死锁在看板盒子盒子里 */
+}
 #custom-video-bg-container {
-  position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-  z-index: -1 !important; /* 👑 核心关键：退居三维宇宙最底层，比任何主体代码都低 */
+  position: absolute !important; top: 0; left: 0; width: 100%; height: 100%;
+  z-index: 0 !important; /* 恰好浮在原厂原厂大图上方，但绝对处于UI文字之下 */
   overflow: hidden;
   background-color: #000000;
-  pointer-events: none; /* 彻底释放点击，鼠标操作可以直接穿透视频精准点到任何UI */
+  pointer-events: none; /* 彻底释放点击，鼠标可以毫无阻碍地点到上方任何菜单上 */
 }
 #custom-video-bg-container video {
   width: 100%; height: 100%; object-fit: cover; pointer-events: none;
 }
-/* 最底层视频播完时的模糊溶解动效 */
+/* 内嵌视频播放播放完完毕溶解淡出 */
 .video-bg-dissolve-out {
   opacity: 0 !important; filter: blur(25px) contrast(1.15) !important;
   transition: opacity 1.5s cubic-bezier(0.25, 1, 0.5, 1), filter 1.5s ease !important;
 }
 
-/* ==========================================================
-   🔮 核心黑魔法：环境光透镜（当视频激活时，强行把上层的挡墙透明化）
-   ==========================================================
-*/
-body.video-active .banner {
-  background: transparent !important;
-  background-image: none !important; /* 强行抹去遮挡视频的原厂静态图 */
-  box-shadow: none !important;
-}
-
-/* 保证导航栏与页面文字图层升维，极度安全地漂浮在最底层视频之上 */
+/* 强行提维导航栏和看板文字层级，确保在内嵌视频上方百分之百自由交互 */
 .navbar, .banner-text, .index-header, .header-inner, #navbar-col {
   position: relative !important; z-index: 10 !important;
 }
 
 /* ==========================================================
-   👑 方案A：专属「點擊進入」Galgame正统全屏开场幕布样式
+   👑 专属「點擊進入」Galgame正统全屏开场幕布样式
    ==========================================================
 */
 #custom-start-overlay {
