@@ -138,3 +138,108 @@ if (window.CONFIG) {
   window.addEventListener('pjax:send', destroyVideoSystem);
   window.addEventListener('pjax:complete', initBlogThemeSystem);
 })();
+/* ==========================================================
+   「櫻之丘」學園专属 - 虚拟光标驱动与粒子物理引擎
+   ==========================================================
+*/
+document.addEventListener('DOMContentLoaded', () => {
+    // --- 1. 创建并挂载所有虚拟元素 ---
+    const cursorContainer = document.createElement('div');
+    cursorContainer.id = 'shinku-cursor-container';
+    const cursor = document.createElement('div');
+    cursor.id = 'shinku-cursor';
+    cursorContainer.appendChild(cursor);
+    document.body.appendChild(cursorContainer);
+
+    const canvas = document.createElement('canvas');
+    canvas.id = 'cursor-star-canvas';
+    document.body.appendChild(canvas);
+    const ctx = canvas.getContext('2d');
+
+    // --- 2. 窗口自适应 ---
+    function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    // --- 3. 核心物理变量 ---
+    let mouseX = window.innerWidth / 2;
+    let mouseY = window.innerHeight / 2;
+    let particles = [];
+    
+    // 🌸 可以在这里自定义你点击时想飘出的“神圣词汇”
+    const words = ["セカイ", "ヒカリ", "魔法", "奇跡", "約束", "櫻之丘", "永遠"];
+
+    // --- 4. 鼠标移动监听：光标跟随 & 撒星星 ---
+    document.addEventListener('mousemove', (e) => {
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+        
+        // 使用 translate 进行硬件加速的高性能移动
+        cursorContainer.style.transform = `translate(${mouseX}px, ${mouseY}px)`;
+
+        // 随机生成掉落的星屑
+        if (Math.random() < 0.35) {
+            particles.push({
+                x: mouseX, 
+                y: mouseY,
+                vx: (Math.random() - 0.5) * 1.5,
+                vy: Math.random() * 1.5 + 0.5,  
+                life: 1,                        
+                size: Math.random() * 2.5 + 1.5,
+                color: Math.random() > 0.6 ? '#ffb3d9' : '#ffffff' 
+            });
+        }
+    });
+
+    // --- 5. 鼠标点击：缩小特效 & 浮动文字 ---
+    document.addEventListener('mousedown', (e) => {
+        cursor.classList.add('cursor-clicked');
+
+        const text = document.createElement('span');
+        text.className = 'float-word-effect';
+        text.innerText = words[Math.floor(Math.random() * words.length)];
+        text.style.left = (e.clientX + 15) + 'px';
+        text.style.top = (e.clientY + 5) + 'px';
+        document.body.appendChild(text);
+
+        setTimeout(() => text.remove(), 1200);
+    });
+
+    // --- 6. 鼠标松开：极限果冻回弹 ---
+    document.addEventListener('mouseup', () => {
+        cursor.classList.remove('cursor-clicked');
+    });
+
+    // --- 7. 星屑粒子渲染循环 ---
+    function renderParticles() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        for (let i = 0; i < particles.length; i++) {
+            let p = particles[i];
+            p.x += p.vx;
+            p.y += p.vy;
+            p.life -= 0.015;
+
+            if (p.life <= 0) {
+                particles.splice(i, 1);
+                i--;
+                continue;
+            }
+
+            ctx.globalAlpha = p.life;
+            ctx.fillStyle = p.color;
+            ctx.shadowBlur = 6; 
+            ctx.shadowColor = p.color;
+            
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        ctx.shadowBlur = 0; 
+        requestAnimationFrame(renderParticles);
+    }
+    renderParticles();
+});
