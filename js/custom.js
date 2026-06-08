@@ -1,6 +1,6 @@
 /* =========================================
    「櫻之丘」學園专属 
-   终极逻辑版：视频纯净独占 ➔ 播完出字 ➔ 全站页面名强制替换为圣经台词
+   终极逻辑版：视频纯净独占 ➔ 全站物理级防篡改锁 ➔ 强制动画重绘
    =========================================
 */
 
@@ -10,10 +10,18 @@ if (window.CONFIG) {
 }
 
 (function () {
+  // 声明全局防篡改守卫
+  let titleObserver = null;
+
   function initBlogThemeSystem() {
     const navbarBrand = document.querySelector('.navbar-brand');
-    const subtitleEl = document.getElementById("subtitle");
-    if (!navbarBrand) return;
+    let subtitleEl = document.getElementById("subtitle");
+    if (!navbarBrand || !subtitleEl) return;
+
+    // 💥 杀手锏 1：暴力克隆节点，物理斩断 Fluid 原厂所有的绑定事件和残留引擎
+    const newSubtitle = subtitleEl.cloneNode(false);
+    subtitleEl.parentNode.replaceChild(newSubtitle, subtitleEl);
+    subtitleEl = newSubtitle;
 
     // 🎯 三套独立主题数据库
     const themes = [
@@ -40,59 +48,76 @@ if (window.CONFIG) {
     const activeTheme = themes[Math.floor(Math.random() * themes.length)];
     navbarBrand.innerHTML = activeTheme.logoHtml;
 
+    // 💥 杀手锏 2：死锁监听器（绝对不让主题篡改我们的台词）
+    function lockSubtitleText(el, text) {
+      if (titleObserver) titleObserver.disconnect();
+      el.innerHTML = text;
+      titleObserver = new MutationObserver(() => {
+        if (el.textContent !== text) {
+          titleObserver.disconnect();
+          el.innerHTML = text; // 强行扇回我们的神仙句子
+          titleObserver.observe(el, { childList: true, characterData: true, subtree: true });
+        }
+      });
+      titleObserver.observe(el, { childList: true, characterData: true, subtree: true });
+    }
+
     const currentPath = window.location.pathname;
     const isHome = currentPath === '/' || currentPath === '/index.html';
 
-    if (subtitleEl) {
-      // 无论哪个页面，都给字加上对应主题的白芯发光特效
-      subtitleEl.className = activeTheme.class;
+    // 绑定发光底座
+    subtitleEl.className = activeTheme.class;
 
-      if (isHome) {
-        // 🏠 首页逻辑：舞台先完全交给视频，字藏起来
-        subtitleEl.textContent = activeTheme.quote;
-        subtitleEl.style.opacity = "0"; // 初始状态绝对隐藏
+    if (isHome) {
+      // 🏠 首页逻辑：视频纯净独占，播完才出字！
+      lockSubtitleText(subtitleEl, activeTheme.quote);
+      subtitleEl.style.opacity = "0"; // 绝对隐身
 
-        const bannerEl = document.querySelector('.banner') || document.getElementById('banner');
-        if (bannerEl) {
-          const videoContainer = document.createElement('div');
-          videoContainer.id = 'custom-video-bg-container';
-          videoContainer.innerHTML = `<video id="intro-player" src="${activeTheme.videoSrc}" playsinline></video>`;
-          bannerEl.insertBefore(videoContainer, bannerEl.firstChild);
+      const bannerEl = document.querySelector('.banner') || document.getElementById('banner');
+      if (bannerEl) {
+        const videoContainer = document.createElement('div');
+        videoContainer.id = 'custom-video-bg-container';
+        videoContainer.innerHTML = `<video id="intro-player" src="${activeTheme.videoSrc}" playsinline></video>`;
+        bannerEl.insertBefore(videoContainer, bannerEl.firstChild);
 
-          const startOverlay = document.createElement('div');
-          startOverlay.id = 'custom-start-overlay';
-          startOverlay.innerHTML = `<div class="start-btn-text">「 點擊進入セカイ 」</div>`;
-          document.body.appendChild(startOverlay);
+        const startOverlay = document.createElement('div');
+        startOverlay.id = 'custom-start-overlay';
+        startOverlay.innerHTML = `<div class="start-btn-text">「 點擊進入セカイ 」</div>`;
+        document.body.appendChild(startOverlay);
 
-          const player = document.getElementById('intro-player');
+        const player = document.getElementById('intro-player');
 
-          // 💥 修正1：点击幕布后，仅播放视频，绝不让字提前跑出来干扰画面！
-          startOverlay.addEventListener('click', function () {
-            startOverlay.classList.add('start-curtain-fade');
-            
-            player.muted = false;
-            player.volume = 1.0;
-            player.play().catch(err => console.log("播放拦截:", err));
+        // 点击只放视频，绝不出字
+        startOverlay.addEventListener('click', function () {
+          startOverlay.classList.add('start-curtain-fade');
+          player.muted = false;
+          player.volume = 1.0;
+          player.play().catch(err => console.log("播放拦截:", err));
+          setTimeout(() => startOverlay.remove(), 800);
+        });
 
-            setTimeout(() => startOverlay.remove(), 800);
-          });
+        // 播完开始溶解，字体带特效破雾而出！
+        player.addEventListener('ended', function () {
+          videoContainer.classList.add('video-bg-dissolve-out');
+          
+          subtitleEl.classList.remove("subtitle-reveal");
+          void subtitleEl.offsetWidth; // 触发核心重绘引擎
+          subtitleEl.style.opacity = "1";
+          subtitleEl.classList.add("subtitle-reveal"); // 加上发光入场动画
 
-          // 💥 修正2：只有当视频播放到最后一帧、开始溶解时，台词才伴随特效破雾而出！
-          player.addEventListener('ended', function () {
-            videoContainer.classList.add('video-bg-dissolve-out');
-            
-            // 此时字才浮现，和底层静态背景图完美绑定
-            subtitleEl.style.opacity = "1";
-            subtitleEl.classList.add("subtitle-reveal");
-
-            setTimeout(() => videoContainer.remove(), 1500);
-          });
-        }
-      } else {
-        // 🏷️ 非首页逻辑（修正3）：直接用首页的神仙句子，残忍抹杀并取代原版的“归档/留言板”等无聊文字！
-        subtitleEl.textContent = activeTheme.quote;
-        subtitleEl.style.opacity = "1";
+          setTimeout(() => videoContainer.remove(), 1500);
+        });
       }
+    } else {
+      // 🏷️ 非首页逻辑（归档/标签/留言板等）
+      lockSubtitleText(subtitleEl, activeTheme.quote); // 绝对死锁取代无聊的页面名
+
+      // 切页时强制触发特效动画！绝不死气沉沉！
+      subtitleEl.classList.remove("subtitle-reveal");
+      subtitleEl.style.opacity = "0";
+      void subtitleEl.offsetWidth; // 触发核心重绘引擎
+      subtitleEl.style.opacity = "1";
+      subtitleEl.classList.add("subtitle-reveal");
     }
   }
 
@@ -109,6 +134,7 @@ if (window.CONFIG) {
     initBlogThemeSystem();
   }
 
+  // 监听 PJAX 切页事件
   window.addEventListener('pjax:send', destroyVideoSystem);
   window.addEventListener('pjax:complete', initBlogThemeSystem);
 })();
