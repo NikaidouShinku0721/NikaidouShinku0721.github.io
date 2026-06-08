@@ -1,6 +1,6 @@
 /* =========================================
    「櫻之丘」學園专属 
-   终极修复版：透明镶嵌导航栏 ➔ 视音频文字完美同步绽放
+   终极逻辑版：视频纯净独占 ➔ 播完出字 ➔ 全站页面名强制替换为圣经台词
    =========================================
 */
 
@@ -44,23 +44,21 @@ if (window.CONFIG) {
     const isHome = currentPath === '/' || currentPath === '/index.html';
 
     if (subtitleEl) {
-      // 无论哪个页面，都给字加上对应主题的发光特效
+      // 无论哪个页面，都给字加上对应主题的白芯发光特效
       subtitleEl.className = activeTheme.class;
 
       if (isHome) {
-        // 🏠 首页：视频与台词同步逻辑
+        // 🏠 首页逻辑：舞台先完全交给视频，字藏起来
         subtitleEl.textContent = activeTheme.quote;
-        subtitleEl.style.opacity = "0"; // 初始隐藏台词
+        subtitleEl.style.opacity = "0"; // 初始状态绝对隐藏
 
         const bannerEl = document.querySelector('.banner') || document.getElementById('banner');
         if (bannerEl) {
-          // 插入无任何遮罩的纯净视频图层
           const videoContainer = document.createElement('div');
           videoContainer.id = 'custom-video-bg-container';
           videoContainer.innerHTML = `<video id="intro-player" src="${activeTheme.videoSrc}" playsinline></video>`;
           bannerEl.insertBefore(videoContainer, bannerEl.firstChild);
 
-          // 启动幕布
           const startOverlay = document.createElement('div');
           startOverlay.id = 'custom-start-overlay';
           startOverlay.innerHTML = `<div class="start-btn-text">「 點擊進入セカイ 」</div>`;
@@ -68,7 +66,7 @@ if (window.CONFIG) {
 
           const player = document.getElementById('intro-player');
 
-          // 💥 关键交互：点击瞬间，视频播放，台词同步带着特效显现！
+          // 💥 修正1：点击幕布后，仅播放视频，绝不让字提前跑出来干扰画面！
           startOverlay.addEventListener('click', function () {
             startOverlay.classList.add('start-curtain-fade');
             
@@ -76,21 +74,23 @@ if (window.CONFIG) {
             player.volume = 1.0;
             player.play().catch(err => console.log("播放拦截:", err));
 
-            // 字和视频一起出现
-            subtitleEl.style.opacity = "1";
-            subtitleEl.classList.add("subtitle-reveal");
-
             setTimeout(() => startOverlay.remove(), 800);
           });
 
-          // 视频播完自然溶解
+          // 💥 修正2：只有当视频播放到最后一帧、开始溶解时，台词才伴随特效破雾而出！
           player.addEventListener('ended', function () {
             videoContainer.classList.add('video-bg-dissolve-out');
+            
+            // 此时字才浮现，和底层静态背景图完美绑定
+            subtitleEl.style.opacity = "1";
+            subtitleEl.classList.add("subtitle-reveal");
+
             setTimeout(() => videoContainer.remove(), 1500);
           });
         }
       } else {
-        // 🏷️ 非首页（如“归档”）：保留原字（如“归档”），且特效全开！
+        // 🏷️ 非首页逻辑（修正3）：直接用首页的神仙句子，残忍抹杀并取代原版的“归档/留言板”等无聊文字！
+        subtitleEl.textContent = activeTheme.quote;
         subtitleEl.style.opacity = "1";
       }
     }
