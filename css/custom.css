@@ -147,8 +147,8 @@
 /* 3. 真红光标本体 👑 核心特效区 */
 #shinku-cursor {
   /* 👑 尺寸升级：直接拉满到原图的 128x128px */
-  width: 128px; 
-  height: 128px;
+  width: 64px; 
+  height: 64px;
   background-image: url('/img/Shinku猫猫鼠标光标.png');
   background-size: contain;
   background-repeat: no-repeat;
