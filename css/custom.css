@@ -76,14 +76,22 @@
 #custom-start-overlay {
   position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1000000 !important;
   background: rgba(10, 10, 12, 0.96); backdrop-filter: blur(15px); 
-  display: flex; align-items: center; justify-content: center; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
 }
+.start-actions { display: flex; flex-direction: column; align-items: center; gap: 1rem; padding: 1.5rem; }
 .start-btn-text {
   font-family: 'PingFang SC', sans-serif; font-weight: bold; font-size: 1.65rem; color: #ffffff; letter-spacing: 4px;
   text-shadow: 0 0 8px rgba(255, 255, 255, 0.6), 0 0 20px rgba(255, 102, 178, 0.4);
   animation: startTextPulse 2.2s ease-in-out infinite; transition: transform 0.3s ease;
 }
-#custom-start-overlay:hover .start-btn-text { transform: scale(1.05); }
+.start-play-button, .start-skip-button {
+  border: 1px solid rgba(255, 255, 255, 0.65); border-radius: 999px; padding: 0.75rem 1.4rem;
+  color: #fff; background: rgba(255, 255, 255, 0.08); font: inherit; cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+.start-play-button:hover, .start-skip-button:hover { background: rgba(255, 102, 178, 0.25); transform: translateY(-1px); }
+.start-skip-button { border-color: transparent; background: transparent; color: rgba(255, 255, 255, 0.78); font-size: 0.95rem; }
+.start-play-button:focus-visible, .start-skip-button:focus-visible { outline: 3px solid #ff8ac4; outline-offset: 4px; }
 .start-curtain-fade { opacity: 0 !important; pointer-events: none; transition: opacity 0.8s ease; }
 @keyframes startTextPulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
 
@@ -131,9 +139,9 @@
    「櫻之丘」學園专属 - 终极虚拟交互光标系统 (新增补丁)
    ==========================================================
 */
-/* 1. 彻底抹杀全站的系统原生无聊光标（使用通配符绝对核爆！） */
-*, *::before, *::after {
-  cursor: none !important;
+/* 只在支持鼠标的设备启用自定义光标，触屏与键盘导航保留系统行为。 */
+@media (hover: hover) and (pointer: fine) {
+  body.custom-cursor-enabled, body.custom-cursor-enabled * { cursor: none !important; }
 }
 
 /* 2. 虚拟光标容器 */
@@ -193,3 +201,14 @@
   pointer-events: none;
   z-index: 9999997; 
 }
+
+@media (max-width: 767px) {
+  .navbar-brand { width: min(290px, 75vw) !important; transform: scale(0.84); transform-origin: left center; }
+  .start-btn-text { font-size: 1.2rem; letter-spacing: 2px; text-align: center; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .start-btn-text, .subtitle-reveal, .custom-logo-container, #shinku-cursor { animation: none !important; transition: none !important; }
+  #cursor-star-canvas, #shinku-cursor-container { display: none !important; }
+}
+

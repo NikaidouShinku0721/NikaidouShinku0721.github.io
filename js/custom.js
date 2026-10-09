@@ -17,6 +17,7 @@ if (window.CONFIG) {
     const navbarBrand = document.querySelector('.navbar-brand');
     let subtitleEl = document.getElementById("subtitle");
     if (!navbarBrand || !subtitleEl) return;
+    const originalSubtitleText = subtitleEl.textContent;
 
     // 💥 杀手锏 1：暴力克隆节点，物理斩断 Fluid 原厂所有的绑定事件和残留引擎
     const newSubtitle = subtitleEl.cloneNode(false);
@@ -75,42 +76,85 @@ if (window.CONFIG) {
 
       const bannerEl = document.querySelector('.banner') || document.getElementById('banner');
       if (bannerEl) {
+        const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
         const videoContainer = document.createElement('div');
         videoContainer.id = 'custom-video-bg-container';
         videoContainer.innerHTML = `<video id="intro-player" src="${activeTheme.videoSrc}" playsinline></video>`;
         bannerEl.insertBefore(videoContainer, bannerEl.firstChild);
 
+        const player = document.getElementById('intro-player');
+        const revealSubtitle = () => {
+          subtitleEl.classList.remove("subtitle-reveal");
+          void subtitleEl.offsetWidth;
+          subtitleEl.style.opacity = "1";
+          subtitleEl.classList.add("subtitle-reveal");
+        };
+
+        if (reduceMotion) {
+          videoContainer.remove();
+          revealSubtitle();
+          return;
+        }
+
         const startOverlay = document.createElement('div');
         startOverlay.id = 'custom-start-overlay';
-        startOverlay.innerHTML = `<div class="start-btn-text">「 點擊進入セカイ 」</div>`;
+        startOverlay.setAttribute('role', 'dialog');
+        startOverlay.setAttribute('aria-modal', 'true');
+        startOverlay.setAttribute('aria-label', '首页影片开场');
+        startOverlay.innerHTML = `
+          <div class="start-actions">
+            <div class="start-btn-text">「 點擊進入セカイ 」</div>
+            <button type="button" class="start-play-button">播放开场</button>
+            <button type="button" class="start-skip-button">跳过开场，直接进入博客</button>
+          </div>`;
         document.body.appendChild(startOverlay);
 
-        const player = document.getElementById('intro-player');
-
-        // 点击只放视频，绝不出字
-        startOverlay.addEventListener('click', function () {
+        const playButton = startOverlay.querySelector('.start-play-button');
+        const skipButton = startOverlay.querySelector('.start-skip-button');
+        const closeOverlay = () => {
           startOverlay.classList.add('start-curtain-fade');
+          window.setTimeout(() => startOverlay.remove(), 800);
+        };
+        const skipIntro = () => {
+          player.pause();
+          videoContainer.remove();
+          closeOverlay();
+          revealSubtitle();
+        };
+
+        playButton.addEventListener('click', function () {
+          closeOverlay();
           player.muted = false;
           player.volume = 1.0;
-          player.play().catch(err => console.log("播放拦截:", err));
-          setTimeout(() => startOverlay.remove(), 800);
+          player.play().catch(() => {
+            videoContainer.remove();
+            revealSubtitle();
+          });
         });
+        skipButton.addEventListener('click', skipIntro);
+        startOverlay.addEventListener('keydown', event => {
+          if (event.key === 'Escape') skipIntro();
+          if (event.key === 'Tab') {
+            const lastButton = event.shiftKey ? playButton : skipButton;
+            const firstButton = event.shiftKey ? skipButton : playButton;
+            if (document.activeElement === lastButton) {
+              event.preventDefault();
+              firstButton.focus();
+            }
+          }
+        });
+        playButton.focus();
 
         // 播完开始溶解，字体带特效破雾而出！
         player.addEventListener('ended', function () {
           videoContainer.classList.add('video-bg-dissolve-out');
-          
-          subtitleEl.classList.remove("subtitle-reveal");
-          void subtitleEl.offsetWidth; // 触发核心重绘引擎
-          subtitleEl.style.opacity = "1";
-          subtitleEl.classList.add("subtitle-reveal"); // 加上发光入场动画
-
+          revealSubtitle();
           setTimeout(() => videoContainer.remove(), 1500);
         });
       }
     } else {
-      // 🏷️ 非首页逻辑（归档/标签/留言板等）
-      lockSubtitleText(subtitleEl, activeTheme.quote); // 绝对死锁取代无聊的页面名
+      // 保留主题为归档、标签和独立页面生成的标题，避免丢失页面上下文。
+      subtitleEl.textContent = originalSubtitleText;
 
       // 切页时强制触发特效动画！绝不死气沉沉！
       subtitleEl.classList.remove("subtitle-reveal");
@@ -143,6 +187,12 @@ if (window.CONFIG) {
    ==========================================================
 */
 document.addEventListener('DOMContentLoaded', () => {
+    const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!finePointer || reduceMotion) return;
+
+    document.body.classList.add('custom-cursor-enabled');
+
     // --- 1. 创建并挂载所有虚拟元素 ---
     const cursorContainer = document.createElement('div');
     cursorContainer.id = 'shinku-cursor-container';
@@ -155,6 +205,12 @@ document.addEventListener('DOMContentLoaded', () => {
     canvas.id = 'cursor-star-canvas';
     document.body.appendChild(canvas);
     const ctx = canvas.getContext('2d');
+    if (!ctx) {
+        cursorContainer.remove();
+        canvas.remove();
+        document.body.classList.remove('custom-cursor-enabled');
+        return;
+    }
 
     // --- 2. 窗口自适应 ---
     function resizeCanvas() {
@@ -168,6 +224,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let mouseX = window.innerWidth / 2;
     let mouseY = window.innerHeight / 2;
     let particles = [];
+    let animationFrame = 0;
+    const maxParticles = 100;
     
     const words = ["セカイ", "ヒカリ", "魔法", "奇跡", "約束", "櫻之丘", "永遠"];
 
@@ -179,7 +237,7 @@ document.addEventListener('DOMContentLoaded', () => {
         cursorContainer.style.transform = `translate(${mouseX}px, ${mouseY}px)`;
 
         // 随机生成高级粒子 (控制生成频率)
-        if (Math.random() < 0.4) {
+        if (Math.random() < 0.25) {
             // 随机决定粒子类型：40%十字星，30%魔法光圈，30%星尘
             const types = ['cross', 'cross', 'halo', 'halo', 'dust', 'dust'];
             const type = types[Math.floor(Math.random() * types.length)];
@@ -196,6 +254,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 rotation: Math.random() * Math.PI * 2, // 随机初始角度
                 rotSpeed: (Math.random() - 0.5) * 0.05 // 缓慢旋转
             });
+            if (particles.length > maxParticles) particles.shift();
+            if (!animationFrame && !document.hidden) animationFrame = requestAnimationFrame(renderParticles);
         }
     });
 
@@ -220,6 +280,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- 7. 高级粒子渲染循环 (图形学重绘) ---
     function renderParticles() {
+        animationFrame = 0;
+        if (document.hidden) return;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         
         for (let i = 0; i < particles.length; i++) {
@@ -230,7 +292,8 @@ document.addEventListener('DOMContentLoaded', () => {
             p.rotation += p.rotSpeed; // 自转
 
             if (p.life <= 0) {
-                particles.splice(i, 1);
+                particles[i] = particles[particles.length - 1];
+                particles.pop();
                 i--;
                 continue;
             }
@@ -272,7 +335,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
             ctx.restore();
         }
-        requestAnimationFrame(renderParticles);
+        if (particles.length) animationFrame = requestAnimationFrame(renderParticles);
     }
-    renderParticles();
+
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+            if (animationFrame) cancelAnimationFrame(animationFrame);
+            animationFrame = 0;
+            particles = [];
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+    });
 });
+
