@@ -47,6 +47,7 @@ if (window.CONFIG) {
     ];
 
     const activeTheme = themes[Math.floor(Math.random() * themes.length)];
+    document.body.dataset.siteTheme = activeTheme.class;
     navbarBrand.innerHTML = activeTheme.logoHtml;
 
     // 💥 杀手锏 2：死锁监听器（绝对不让主题篡改我们的台词）
@@ -182,6 +183,91 @@ if (window.CONFIG) {
   window.addEventListener('pjax:send', destroyVideoSystem);
   window.addEventListener('pjax:complete', initBlogThemeSystem);
 })();
+
+/* Editorial chapter navigation inspired by the site's world archive. */
+(function () {
+  let listenersReady = false;
+  let revealObserver = null;
+
+  function updateEditorialChrome() {
+    const progress = document.getElementById('site-reading-progress');
+    if (progress) {
+      const scrollable = document.documentElement.scrollHeight - window.innerHeight;
+      const ratio = scrollable > 0 ? window.scrollY / scrollable : 0;
+      progress.style.transform = `scaleX(${Math.min(1, Math.max(0, ratio))})`;
+    }
+
+    const navbar = document.querySelector('.navbar, #navbar');
+    if (navbar) navbar.classList.toggle('archive-nav-scrolled', window.scrollY > 24);
+  }
+
+  function setupEditorialLayout() {
+    if (!document.getElementById('site-reading-progress')) {
+      const progress = document.createElement('div');
+      progress.id = 'site-reading-progress';
+      progress.setAttribute('aria-hidden', 'true');
+      document.body.appendChild(progress);
+    }
+
+    const banner = document.querySelector('.banner, #banner');
+    if (banner && !banner.querySelector('.editorial-hero-meta')) {
+      const meta = document.createElement('div');
+      meta.className = 'editorial-hero-meta';
+      meta.setAttribute('aria-hidden', 'true');
+      meta.innerHTML = `
+        <span class="editorial-hero-meta__top"><span>PERSONAL ARCHIVE</span><b>NO. 01</b></span>
+        <span class="editorial-hero-meta__bottom"><b>MEMORY / FIELD NOTES</b><span>SCROLL TO EXPLORE <i>↓</i></span></span>`;
+      banner.appendChild(meta);
+    }
+
+    const indexCard = document.querySelector('.index-card');
+    if (indexCard && !indexCard.previousElementSibling?.classList.contains('editorial-archive-heading')) {
+      const heading = document.createElement('header');
+      heading.className = 'editorial-archive-heading editorial-reveal';
+      heading.innerHTML = `
+        <p class="editorial-archive-heading__eyebrow">01 <span>//</span> FIELD NOTES</p>
+        <div><h2>记忆档案</h2><p>把灵感、日常与喜欢的故事，慢慢收进这里。</p></div>
+        <span class="editorial-archive-heading__index">ARCHIVE<br>2026</span>`;
+      indexCard.parentNode.insertBefore(heading, indexCard);
+    }
+
+    const entries = document.querySelectorAll('.index-info');
+    entries.forEach((entry, index) => {
+      entry.dataset.entryIndex = String(index + 1).padStart(2, '0');
+      entry.classList.add('editorial-reveal');
+    });
+
+    if (revealObserver) revealObserver.disconnect();
+    if ('IntersectionObserver' in window && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      revealObserver = new IntersectionObserver((items, observer) => {
+        items.forEach(item => {
+          if (item.isIntersecting) {
+            item.target.classList.add('is-visible');
+            observer.unobserve(item.target);
+          }
+        });
+      }, { threshold: 0.12, rootMargin: '0px 0px -36px 0px' });
+      document.querySelectorAll('.editorial-reveal').forEach(element => revealObserver.observe(element));
+    } else {
+      document.querySelectorAll('.editorial-reveal').forEach(element => element.classList.add('is-visible'));
+    }
+
+    if (!listenersReady) {
+      window.addEventListener('scroll', updateEditorialChrome, { passive: true });
+      window.addEventListener('resize', updateEditorialChrome, { passive: true });
+      window.addEventListener('pjax:complete', setupEditorialLayout);
+      listenersReady = true;
+    }
+    updateEditorialChrome();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setupEditorialLayout);
+  } else {
+    setupEditorialLayout();
+  }
+})();
+
 /* ==========================================================
    「櫻之丘」學園专属 - 虚拟光标驱动与粒子物理引擎
    ==========================================================
