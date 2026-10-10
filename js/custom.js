@@ -1,278 +1,89 @@
-/* =========================================
-   「櫻之丘」學園专属 
-   终极逻辑版：视频纯净独占 ➔ 全站物理级防篡改锁 ➔ 强制动画重绘
-   =========================================
-*/
-
-if (window.CONFIG) {
-  if (window.CONFIG.typed) window.CONFIG.typed.enable = false;
-  if (window.CONFIG.slogan) window.CONFIG.slogan.typed = false;
-}
-
+/* Original logos and optional opening movies; the page is readable immediately. */
 (function () {
-  // 声明全局防篡改守卫
-  let titleObserver = null;
-
-  function initBlogThemeSystem() {
-    const navbarBrand = document.querySelector('.navbar-brand');
-    let subtitleEl = document.getElementById("subtitle");
-    if (!navbarBrand || !subtitleEl) return;
-    const originalSubtitleText = subtitleEl.textContent;
-
-    // 💥 杀手锏 1：暴力克隆节点，物理斩断 Fluid 原厂所有的绑定事件和残留引擎
-    const newSubtitle = subtitleEl.cloneNode(false);
-    subtitleEl.parentNode.replaceChild(newSubtitle, subtitleEl);
-    subtitleEl = newSubtitle;
-
-    // 🎯 三套独立主题数据库
-    const themes = [
-      {
-        class: "glow-pink",
-        quote: "私たちの幸せは、ずっとずっと続いていくんだって、信じてるよ――",
-        videoSrc: "/video/紅い瞳に映るセカイ HD ReGENERATION op.mp4",
-        logoHtml: `<div class="custom-logo-container theme-pink"><div class="logo-prefix"><span class="char-high">紅</span><span class="char-low">い</span><span class="char-high">瞳</span><span class="char-low">に</span><span class="char-high">映</span><span class="char-low">る</span></div><div class="logo-main">セカイ</div><div class="logo-sub">WORLD'S END LOVE WILL LAST FOREVER</div><div class="logo-feather"></div></div>`
-      },
-      {
-        class: "glow-blue",
-        quote: "そして始まる、きみとぼく、のセカイ――",
-        videoSrc: "/video/いろとりどりのセカイHD ReGENERATION op.mp4",
-        logoHtml: `<div class="custom-logo-container theme-blue"><div class="logo-prefix"><span class="char-high color-darkblue">い</span><span class="char-low color-darkblue">ろ</span><span class="char-high color-darkblue">と</span><span class="char-low color-darkblue">り</span><span class="char-high color-lightblue">ど</span><span class="char-low color-lightblue">り</span><span class="char-tiny color-lightblue">の</span></div><div class="logo-main">セカイ</div><div class="logo-sub">I WANT TO SPREAD MY WINGS AND FLY INTO THE SKY.</div><div class="logo-wing"></div></div>`
-      },
-      {
-        class: "glow-orange",
-        quote: "その想いはヒカリ、新しいセカイを開く 笑顔の魔法――",
-        videoSrc: "/video/いろとりどりのヒカリ HD ReGENERATION op.mp4",
-        logoHtml: `<div class="custom-logo-container theme-yellow"><div class="logo-prefix"><span class="char-high color-magenta">い</span><span class="char-low color-magenta">ろ</span><span class="char-high color-gold">と</span><span class="char-low color-gold">り</span><span class="char-high color-gold">ど</span><span class="char-low color-gold">り</span><span class="char-tiny color-gold">の</span></div><div class="logo-main">ヒカリ</div><div class="logo-sub">THE ETERNAL CHAPTER IN IROTORIDORI NO SEKAI</div><div class="logo-sparkle"></div></div>`
-      }
-    ];
-
-    const activeTheme = themes[Math.floor(Math.random() * themes.length)];
-    document.body.dataset.siteTheme = activeTheme.class;
-    navbarBrand.innerHTML = activeTheme.logoHtml;
-
-    // 💥 杀手锏 2：死锁监听器（绝对不让主题篡改我们的台词）
-    function lockSubtitleText(el, text) {
-      if (titleObserver) titleObserver.disconnect();
-      el.innerHTML = text;
-      titleObserver = new MutationObserver(() => {
-        if (el.textContent !== text) {
-          titleObserver.disconnect();
-          el.innerHTML = text; // 强行扇回我们的神仙句子
-          titleObserver.observe(el, { childList: true, characterData: true, subtree: true });
-        }
+  'use strict';
+  if (window.CONFIG?.typed) window.CONFIG.typed.enable = false;
+  const works = {
+    sekai: {logo:'logo-sekai', scene:'scene-coast', sprite:'sprite-shinku', label:'五彩斑斓的世界', video:'いろとりどりのセカイHD ReGENERATION op.mp4'},
+    hikari: {logo:'logo-hikari', scene:'scene-dorm-evening', sprite:'sprite-kyou', label:'五彩斑斓的曙光', video:'いろとりどりのヒカリ HD ReGENERATION op.mp4'},
+    akaseka: {logo:'logo-akaseka', scene:'scene-coast-evening', sprite:'sprite-shinku', label:'映入红瞳的世界', video:'紅い瞳に映るセカイ HD ReGENERATION op.mp4'}
+  };
+  const asset = name => '/img/trilogy/' + name + '.webp';
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+  function ready() {
+    const brand = document.querySelector('.navbar-brand');
+    if (brand) {
+      brand.innerHTML = '<img class="original-brand" src="' + asset('logo-sekai') + '" alt="风津之滨 · 五彩斑斓的世界" width="1150" height="283">';
+      brand.setAttribute('aria-label', '风津之滨 · 返回首页');
+    }
+    const navbar = document.getElementById('navbar');
+    const chrome = () => navbar?.classList.toggle('archive-nav-scrolled', scrollY > 40);
+    addEventListener('scroll', chrome, {passive:true}); chrome();
+    const cover = document.querySelector('[data-home-cover]');
+    if (!cover) return;
+    let current = 'sekai', version = 0;
+    const feedback = document.createElement('p');
+    feedback.className = 'archive-feedback'; feedback.setAttribute('role', 'status'); feedback.hidden = true; cover.append(feedback);
+    const choices = Array.from(cover.querySelectorAll('[data-home-work]'));
+    choices.forEach(button => button.addEventListener('click', async () => {
+      const key = button.dataset.homeWork, work = works[key];
+      if (!work) return;
+      const next = ++version;
+      cover.classList.remove('is-switching');
+      feedback.hidden = true;
+      if (current === key) return;
+      const images = ['logo','scene','sprite'].map(field => {
+        const img = new Image(); img.src = asset(work[field]);
+        return img.decode().then(() => img.naturalWidth > 0).catch(() => false);
       });
-      titleObserver.observe(el, { childList: true, characterData: true, subtree: true });
-    }
-
-    const currentPath = window.location.pathname;
-    const isHome = currentPath === '/' || currentPath === '/index.html';
-
-    // 绑定发光底座
-    subtitleEl.className = activeTheme.class;
-
-    if (isHome) {
-      // 🏠 首页逻辑：视频纯净独占，播完才出字！
-      lockSubtitleText(subtitleEl, activeTheme.quote);
-      subtitleEl.style.opacity = "0"; // 绝对隐身
-
-      const bannerEl = document.querySelector('.banner') || document.getElementById('banner');
-      if (bannerEl) {
-        const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-        const videoContainer = document.createElement('div');
-        videoContainer.id = 'custom-video-bg-container';
-        videoContainer.innerHTML = `<video id="intro-player" src="${activeTheme.videoSrc}" playsinline></video>`;
-        bannerEl.insertBefore(videoContainer, bannerEl.firstChild);
-
-        const player = document.getElementById('intro-player');
-        const revealSubtitle = () => {
-          subtitleEl.classList.remove("subtitle-reveal");
-          void subtitleEl.offsetWidth;
-          subtitleEl.style.opacity = "1";
-          subtitleEl.classList.add("subtitle-reveal");
-        };
-
-        if (reduceMotion) {
-          videoContainer.remove();
-          revealSubtitle();
-          return;
-        }
-
-        const startOverlay = document.createElement('div');
-        startOverlay.id = 'custom-start-overlay';
-        startOverlay.setAttribute('role', 'dialog');
-        startOverlay.setAttribute('aria-modal', 'true');
-        startOverlay.setAttribute('aria-label', '首页影片开场');
-        startOverlay.innerHTML = `
-          <div class="start-actions">
-            <div class="start-btn-text">「 點擊進入セカイ 」</div>
-            <button type="button" class="start-play-button">播放开场</button>
-            <button type="button" class="start-skip-button">跳过开场，直接进入博客</button>
-          </div>`;
-        document.body.appendChild(startOverlay);
-
-        const playButton = startOverlay.querySelector('.start-play-button');
-        const skipButton = startOverlay.querySelector('.start-skip-button');
-        const closeOverlay = () => {
-          startOverlay.classList.add('start-curtain-fade');
-          window.setTimeout(() => startOverlay.remove(), 800);
-        };
-        const skipIntro = () => {
-          player.pause();
-          videoContainer.remove();
-          closeOverlay();
-          revealSubtitle();
-        };
-
-        playButton.addEventListener('click', function () {
-          closeOverlay();
-          player.muted = false;
-          player.volume = 1.0;
-          player.play().catch(() => {
-            videoContainer.remove();
-            revealSubtitle();
-          });
-        });
-        skipButton.addEventListener('click', skipIntro);
-        startOverlay.addEventListener('keydown', event => {
-          if (event.key === 'Escape') skipIntro();
-          if (event.key === 'Tab') {
-            const lastButton = event.shiftKey ? playButton : skipButton;
-            const firstButton = event.shiftKey ? skipButton : playButton;
-            if (document.activeElement === lastButton) {
-              event.preventDefault();
-              firstButton.focus();
-            }
-          }
-        });
-        playButton.focus();
-
-        // 播完开始溶解，字体带特效破雾而出！
-        player.addEventListener('ended', function () {
-          videoContainer.classList.add('video-bg-dissolve-out');
-          revealSubtitle();
-          setTimeout(() => videoContainer.remove(), 1500);
-        });
+      const loaded = await Promise.all(images);
+      if (version !== next) return;
+      if (loaded.some(ok => !ok)) {
+        feedback.textContent = '这组原作画面暂时未能载入，请稍后重试。'; feedback.hidden = false;
+        return;
       }
-    } else {
-      // 保留主题为归档、标签和独立页面生成的标题，避免丢失页面上下文。
-      subtitleEl.textContent = originalSubtitleText;
-
-      // 切页时强制触发特效动画！绝不死气沉沉！
-      subtitleEl.classList.remove("subtitle-reveal");
-      subtitleEl.style.opacity = "0";
-      void subtitleEl.offsetWidth; // 触发核心重绘引擎
-      subtitleEl.style.opacity = "1";
-      subtitleEl.classList.add("subtitle-reveal");
-    }
-  }
-
-  function destroyVideoSystem() {
-    const videoBg = document.getElementById('custom-video-bg-container');
-    if (videoBg) videoBg.remove();
-    const startOverlay = document.getElementById('custom-start-overlay');
-    if (startOverlay) startOverlay.remove();
-  }
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initBlogThemeSystem);
-  } else {
-    initBlogThemeSystem();
-  }
-
-  // 监听 PJAX 切页事件
-  window.addEventListener('pjax:send', destroyVideoSystem);
-  window.addEventListener('pjax:complete', initBlogThemeSystem);
-})();
-
-/* Editorial chapter navigation inspired by the site's world archive. */
-(function () {
-  let listenersReady = false;
-  let revealObserver = null;
-
-  function updateEditorialChrome() {
-    const progress = document.getElementById('site-reading-progress');
-    if (progress) {
-      const scrollable = document.documentElement.scrollHeight - window.innerHeight;
-      const ratio = scrollable > 0 ? window.scrollY / scrollable : 0;
-      progress.style.transform = `scaleX(${Math.min(1, Math.max(0, ratio))})`;
-    }
-
-    const navbar = document.querySelector('.navbar, #navbar');
-    if (navbar) navbar.classList.toggle('archive-nav-scrolled', window.scrollY > 24);
-  }
-
-  function setupEditorialLayout() {
-    if (!document.getElementById('site-reading-progress')) {
-      const progress = document.createElement('div');
-      progress.id = 'site-reading-progress';
-      progress.setAttribute('aria-hidden', 'true');
-      document.body.appendChild(progress);
-    }
-
-    const banner = document.querySelector('.banner, #banner');
-    if (banner && !banner.querySelector('.editorial-hero-meta')) {
-      const meta = document.createElement('div');
-      meta.className = 'editorial-hero-meta';
-      meta.setAttribute('aria-hidden', 'true');
-      meta.innerHTML = `
-        <span class="editorial-hero-meta__top"><span>PERSONAL ARCHIVE</span><b>NO. 01</b></span>
-        <span class="editorial-hero-meta__bottom"><b>MEMORY / FIELD NOTES</b><span>SCROLL TO EXPLORE <i>↓</i></span></span>`;
-      banner.appendChild(meta);
-    }
-
-    const indexCard = document.querySelector('.index-card');
-    if (indexCard && !indexCard.previousElementSibling?.classList.contains('editorial-archive-heading')) {
-      const heading = document.createElement('header');
-      heading.className = 'editorial-archive-heading editorial-reveal';
-      heading.innerHTML = `
-        <p class="editorial-archive-heading__eyebrow">01 <span>//</span> FIELD NOTES</p>
-        <div><h2>记忆档案</h2><p>把灵感、日常与喜欢的故事，慢慢收进这里。</p></div>
-        <span class="editorial-archive-heading__index">ARCHIVE<br>2026</span>`;
-      indexCard.parentNode.insertBefore(heading, indexCard);
-    }
-
-    const entries = document.querySelectorAll('.index-info');
-    entries.forEach((entry, index) => {
-      entry.dataset.entryIndex = String(index + 1).padStart(2, '0');
-      entry.classList.add('editorial-reveal');
+      cover.classList.add('is-switching');
+      await new Promise(resolve => setTimeout(resolve, reduced.matches ? 0 : 180));
+      if (version !== next) return;
+      current = key;
+      cover.dataset.homeWorkCurrent = key;
+      cover.querySelector('[data-home-scene]').src = asset(work.scene);
+      cover.querySelector('[data-home-scene]').alt = key === 'hikari' ? '原作中黄昏时的岚山庄' : key === 'akaseka' ? '原作中黄昏时的风津之滨海岸' : '原作中风津之滨的蓝色海岸';
+      cover.querySelector('[data-home-logo]').src = asset(work.logo);
+      cover.querySelector('[data-home-logo]').alt = work.label + '原作标题标志';
+      cover.querySelector('[data-home-portrait]').src = asset(work.sprite);
+      cover.querySelector('[data-home-portrait]').alt = (key === 'hikari' ? '敷島鏡' : '二階堂真紅') + '原作立绘';
+      if (brand) {
+        brand.querySelector('img').src = asset(work.logo);
+        brand.querySelector('img').alt = '风津之滨 · ' + work.label;
+      }
+      choices.forEach(item => item.setAttribute('aria-pressed', String(item === button)));
+      cover.classList.remove('is-switching');
+    }));
+    const opener = document.getElementById('home-opening-button');
+    opener?.addEventListener('click', () => {
+      const dialog = document.createElement('dialog');
+      dialog.className = 'opening-dialog';
+      dialog.setAttribute('aria-label', works[current].label + '开场影片');
+      const close = document.createElement('button');
+      close.type = 'button'; close.textContent = '关闭开场 ×'; close.className = 'opening-close';
+      const player = document.createElement('video');
+      player.controls = true; player.playsInline = true; player.preload = 'none';
+      player.src = '/video/' + works[current].video;
+      dialog.append(close, player); document.body.append(dialog);
+      const finish = () => { player.pause(); dialog.close(); };
+      close.addEventListener('click', finish);
+      player.addEventListener('ended', finish);
+      dialog.addEventListener('click', event => { if (event.target === dialog) finish(); });
+      dialog.addEventListener('close', () => { player.pause(); dialog.remove(); opener.focus(); });
+      dialog.showModal(); close.focus(); player.play().catch(() => {});
     });
-
-    if (revealObserver) revealObserver.disconnect();
-    if ('IntersectionObserver' in window && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      revealObserver = new IntersectionObserver((items, observer) => {
-        items.forEach(item => {
-          if (item.isIntersecting) {
-            item.target.classList.add('is-visible');
-            observer.unobserve(item.target);
-          }
-        });
-      }, { threshold: 0.12, rootMargin: '0px 0px -36px 0px' });
-      document.querySelectorAll('.editorial-reveal').forEach(element => revealObserver.observe(element));
-    } else {
-      document.querySelectorAll('.editorial-reveal').forEach(element => element.classList.add('is-visible'));
-    }
-
-    if (!listenersReady) {
-      window.addEventListener('scroll', updateEditorialChrome, { passive: true });
-      window.addEventListener('resize', updateEditorialChrome, { passive: true });
-      window.addEventListener('pjax:complete', setupEditorialLayout);
-      listenersReady = true;
-    }
-    updateEditorialChrome();
   }
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', setupEditorialLayout);
-  } else {
-    setupEditorialLayout();
-  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', ready);
+  else ready();
 })();
 
-/* ==========================================================
-   「櫻之丘」學園专属 - 虚拟光标驱动与粒子物理引擎
-   ==========================================================
-*/
 document.addEventListener('DOMContentLoaded', () => {
+    if (document.body.classList.contains('world-home') || document.getElementById('irotoridori-archive')) return;
     const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (!finePointer || reduceMotion) return;

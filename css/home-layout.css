@@ -1,0 +1,186 @@
+/* Home page composition. Shared scene styles live in irotoridori-archive.css. */
+body.world-home { background: #eef8f5 !important; }
+body.world-home > header .header-inner {
+  height: 100svh !important;
+  min-height: 100svh;
+  max-height: none !important;
+}
+body.world-home #banner.trilogy-home-hero {
+  height: 100svh !important;
+  min-height: 100svh;
+  margin: 0;
+  padding: 0;
+  background: #378faf !important;
+}
+body.world-home #banner .scene-cover__bg { object-position: center; }
+body.world-home #banner .scene-cover__portrait {
+  right: 7%;
+  bottom: -6%;
+  height: 94%;
+  max-width: 56% !important;
+}
+body.world-home #banner .scene-cover__feathers { opacity: .5; }
+body.world-home #banner .scene-cover__copy {
+  width: 46%;
+  max-width: 690px;
+  margin-left: 7vw;
+  padding: clamp(140px, 20svh, 215px) 0 150px;
+}
+body.world-home #banner .scene-cover__eyebrow { font-size: 10px; letter-spacing: .16em; gap: 15px; }
+body.world-home #banner .scene-cover__logo { width: min(100%, 590px); margin: 30px 0 26px; }
+body.world-home #banner h1 { font-size: clamp(28px, 2.4vw, 41px); margin-bottom: 18px; }
+body.world-home #banner .home-cover-lead {
+  max-width: 500px;
+  font-size: 14px;
+  line-height: 2.05;
+  letter-spacing: .06em;
+}
+body.world-home #banner .scene-cover__actions { margin-top: 30px; gap: 12px; }
+body.world-home #banner .game-button { min-width: 175px; min-height: 47px; font-size: 13px; }
+.home-opening-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 23px;
+  padding: 6px 3px;
+  background: transparent;
+  color: white;
+  border: 0;
+  border-bottom: 1px solid #c9eff1a6;
+  font-size: 12px !important;
+  text-shadow: 0 1px 8px #153852;
+}
+.home-opening-symbol { font-size: 23px; line-height: 1; }
+.home-opening-button:hover { color: #dffbff; border-color: #fff; }
+.home-cover-vertical {
+  position: absolute;
+  right: 3.5%;
+  top: 28%;
+  writing-mode: vertical-rl;
+  font: 15px/1.9 'Yu Mincho', 'SimSun', serif;
+  letter-spacing: .32em;
+  text-shadow: 0 2px 8px #123959;
+}
+.home-scroll-cue{position:absolute;left:43%;bottom:68px;display:grid;place-items:center;font-size:11px;letter-spacing:.14em;text-shadow:0 1px 6px #173755}
+.home-scroll-cue span{font-size:25px;line-height:1.2;animation:scroll-cue 2.4s ease-in-out infinite}
+@media(max-width:640px){.home-scroll-cue{left:auto;right:7%;bottom:140px;font-size:10px}}
+.home-cover-bottom {
+  position: absolute;
+  left: 4%;
+  right: 4%;
+  bottom: 30px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 30px;
+  border-top: 1px solid #d7f9ff80;
+  padding-top: 15px;
+}
+.home-cover-credit { font-size: 10px; letter-spacing: .07em; line-height: 1.8 !important; color: #dff0f2; }
+.home-work-selector { display: flex; gap: 10px; max-width: 68%; }
+.home-work-choice {
+  --work-color: #5ec9e4;
+  display: inline-flex;
+  gap: 10px;
+  align-items: center;
+  min-height: 41px;
+  padding: 7px 13px;
+  border: 0;
+  border-top: 3px solid var(--work-color);
+  color: #eefaff;
+  background: #173e555c;
+  white-space: nowrap;
+  font-size: 11px !important;
+  letter-spacing: .04em;
+  transition: background .2s, transform .2s;
+}
+.home-work-choice[data-home-work="hikari"] { --work-color: #f2d575; }
+.home-work-choice[data-home-work="akaseka"] { --work-color: #ef9dbb; }
+.home-work-choice[aria-pressed="true"], .home-work-choice:hover { background: #143e57a8; }
+.home-work-choice:hover { transform: translateY(-2px); }
+.home-work-number { font: italic 17px Georgia, serif; color: var(--work-color); }
+
+/* The storybook is inserted as main's first child. Fluid's article container
+   remains below it and never overlaps that new section with a negative margin. */
+body.world-home > main { margin: 0; padding-top: 0; }
+body.world-home > main > .container { margin-top: 0 !important; padding-top: 0 !important; }
+body.world-home > main > .container #board {
+  margin-top: 0 !important;
+  border-radius: 0;
+  box-shadow: none;
+  padding-top: 45px !important;
+  padding-bottom: 45px;
+  background: #f4faf7;
+}
+body.world-home #board::before { display: none; }
+body.world-home #navbar {
+  background: linear-gradient(#0b284fcc, #123a5000) !important;
+  min-height: 76px;
+}
+body.world-home #navbar .container { width: 100%; max-width: none; padding-left: 4vw; padding-right: 4vw; }
+body.world-home #navbar .navbar-brand { width: 245px !important; height: 60px !important; }
+body.world-home #navbar .nav-link { color: #fff; text-shadow: 0 1px 4px #153752; }
+body.world-home #navbar.top-nav-collapse { background: #133952ee !important; }
+body.world-home #world-picturebook { scroll-margin-top: 76px; }
+
+@media (max-width: 1199px) {
+  body.world-home #banner .scene-cover__copy { margin-left: 5%; width: 48%; }
+  body.world-home #banner .scene-cover__portrait { right: 3%; max-width: 57% !important; }
+  body.world-home #banner .scene-cover__eyebrow { font-size: 9px; letter-spacing: .09em; }
+  .home-cover-bottom { gap: 15px; }
+  .home-work-selector { max-width: 73%; gap: 6px; }
+  .home-work-choice { padding: 7px 10px; gap: 6px; font-size: 10px !important; }
+  body.world-home #navbar .navbar-brand { width: 225px !important; }
+}
+@media (max-width: 991px) {
+  body.world-home #navbar { background: #0c314ba3 !important; }
+  body.world-home #navbar .navbar-collapse { background: #123a4ae8; padding: 10px 0; }
+  body.world-home #banner .scene-cover__copy { width: 53%; }
+  body.world-home #banner .scene-cover__actions { gap: 7px; }
+  body.world-home #banner .game-button { min-width: 148px; padding: 8px 17px; }
+  .home-cover-vertical { right: 2%; font-size: 12px; }
+  .home-cover-bottom { align-items: center; flex-direction: column-reverse; gap: 11px; bottom: 19px; }
+  .home-work-selector { max-width: 100%; width: 100%; justify-content: center; }
+  .home-work-choice { flex: 1; justify-content: center; max-width: 230px; }
+}
+@media (max-width: 640px) {
+  body.world-home > header .header-inner,
+  body.world-home #banner.trilogy-home-hero { height: 100svh !important; min-height: 680px; }
+  body.world-home #banner::before {
+    background: linear-gradient(90deg, #163c6566, #15384e00), linear-gradient(0deg, #092a50ef, #143b5133 60%, #173c5033);
+  }
+  body.world-home #banner .scene-cover__bg { object-position: 52% center; }
+  body.world-home #banner .scene-cover__portrait {
+    height: 78%;
+    right: -22%;
+    bottom: 8%;
+    max-width: 98% !important;
+    opacity: .96;
+  }
+  body.world-home #banner .scene-cover__copy {
+    width: 89%;
+    max-width: none;
+    margin-left: 5.5%;
+    padding-top: 115px;
+    padding-bottom: 130px;
+  }
+  body.world-home #banner .scene-cover__eyebrow { width: 92%; font-size: 8px; letter-spacing: .06em; }
+  body.world-home #banner .scene-cover__logo { width: 83%; margin: 24px 0 20px; }
+  body.world-home #banner h1 { font-size: 28px; margin: 20px 0 17px; }
+  body.world-home #banner .home-cover-lead { max-width: 64%; font-size: 12px; line-height: 1.95; }
+  body.world-home #banner .scene-cover__actions { max-width: 72%; margin-top: 29px; flex-direction: column; align-items: start; gap: 10px; }
+  body.world-home #banner .game-button { min-width: 182px; min-height: 43px; }
+  .home-opening-button { margin-top: 17px; }
+  .home-cover-vertical { display: none; }
+  .home-work-choice { min-height: 48px; padding: 6px 5px; gap: 3px; white-space: normal; line-height: 1.65 !important; }
+  .home-work-number { font-size: 14px; }
+  .home-cover-credit { font-size: 9px; }
+  body.world-home #navbar .navbar-brand { width: 240px !important; }
+}
+@media (prefers-reduced-motion: reduce) {
+  body.world-home #banner .scene-cover__bg,
+  body.world-home #banner .scene-cover__feathers,
+  body.world-home #banner .scene-cover__portrait { animation: none !important; }
+  .home-work-choice { transition: none; }
+}
+
