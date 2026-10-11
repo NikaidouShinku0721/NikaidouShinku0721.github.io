@@ -1,0 +1,18 @@
+/* Voice UI uses the original message window's frame. */
+.game-voice-player{position:fixed;right:20px;bottom:20px;z-index:1050;max-width:360px;color:#274b64;font-family:inherit;filter:drop-shadow(0 2px 9px #183d4b21)}
+.voice-controls{display:flex;justify-content:flex-end;gap:6px}
+.voice-controls button,.original-voice-button{background:#f7fcfbf2;border:1px solid #a6c9d6;color:#285671;padding:8px 12px;font:12px/1.6 inherit;letter-spacing:.04em}
+.voice-controls button:hover,.original-voice-button:hover{background:#e0f4f8}
+.voice-controls button[aria-pressed="true"]{border-color:#588ca9;background:#e4f5fa}
+.voice-caption{padding:17px 21px 14px;margin-top:7px;border:10px solid transparent;border-image:url('/img/trilogy/ui-message-frame.webp') 80 160 80 160 stretch;background:#f8fcfbf7;font-size:12px;line-height:1.8}
+.voice-caption p{margin:0 0 4px;line-height:1.8!important}
+.voice-caption [data-voice-name]{font-size:10px;letter-spacing:.08em;color:#6a8997}
+.voice-caption [data-voice-ja]{font:14px/1.9 'Yu Mincho','SimSun',serif}
+.voice-caption small,.voice-caption a{font-size:9px;color:#668490}.voice-caption a{margin-left:10px}
+.original-voice-button{margin:0 14px 12px 0;background:#f8fcfbbd}
+.original-voice-button.is-playing{border-color:#478fa4}
+.voice-controls button:focus-visible,.original-voice-button:focus-visible{outline:3px solid #d7b66a;outline-offset:3px}
+.game-voice-player [hidden]{display:none!important}
+@media(max-width:760px){.game-voice-player{right:12px;bottom:12px;max-width:calc(100vw - 24px)}.voice-caption{max-width:310px;padding:12px 15px;font-size:11px}.voice-controls button{font-size:10px;padding:6px 9px}}
+
+.original-voice-button--small{font-size:10px;letter-spacing:0;padding:6px 9px}

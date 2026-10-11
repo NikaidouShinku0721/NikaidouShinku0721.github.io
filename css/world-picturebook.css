@@ -89,3 +89,4 @@
 }
 @media(prefers-reduced-motion:reduce){.world-picturebook *,.world-picturebook *:before,.world-picturebook *:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
 
+.pb-world-note .pb-story-source{font-size:11px;line-height:1.8;color:#67818d;margin-top:7px}.pb-original-mark{white-space:nowrap}

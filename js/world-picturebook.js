@@ -108,6 +108,7 @@
           return;
         }
         renderPage(index, focusTab);
+        document.dispatchEvent(new CustomEvent("picturebook-page-change", {detail:{id:chapters[index].dataset.pbChapter}}));
         if (stage) {
           window.requestAnimationFrame(() => {
             if (sequence !== requestSequence || !book.isConnected) return;
@@ -153,4 +154,3 @@
   else setupPicturebooks();
   window.addEventListener('pjax:complete', setupPicturebooks);
 })();
-

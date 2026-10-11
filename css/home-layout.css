@@ -184,3 +184,15 @@ body.world-home #world-picturebook { scroll-margin-top: 76px; }
   .home-work-choice { transition: none; }
 }
 
+/* Timed trilogy selector, with a visible pause control and elapsed rail. */
+.home-cycle-control{display:flex;align-items:center;gap:9px;color:#effaff;font-size:10px;white-space:nowrap;text-shadow:0 1px 4px #123c50}
+.home-cycle-control button{width:32px;height:32px;border:1px solid #d5f3ff9c;color:white;background:#143d5766;font-size:13px;line-height:1}
+.home-cycle-control button:hover{background:#143d57c9}
+.home-cycle-control button:focus-visible{outline:3px solid #f9dc91;outline-offset:3px}
+.home-cycle-rail{position:absolute;left:0;right:0;top:-1px;height:2px;overflow:hidden;pointer-events:none}
+.home-cycle-rail i{display:block;width:100%;height:100%;background:#f0e8b9;transform-origin:left;animation:home-cycle-elapsed 12s linear forwards}
+[data-home-cycle="paused"] .home-cycle-rail i{animation-play-state:paused}
+@keyframes home-cycle-elapsed{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@media(min-width:992px){.home-cover-credit{max-width:23%}.home-work-selector{max-width:60%}.home-cover-bottom{gap:18px}}
+@media(max-width:991px){.home-cycle-control{position:absolute;right:0;bottom:0}.home-cover-credit{align-self:flex-start;max-width:65%}.home-cover-bottom{padding-top:13px}}
+@media(prefers-reduced-motion:reduce){.home-cycle-rail{display:none}.home-scroll-cue span{animation:none}}

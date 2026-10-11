@@ -194,4 +194,3 @@ body:has(#irotoridori-archive) .navbar-brand{width:240px!important;height:60px!i
 #irotoridori-archive #world-picturebook{scroll-margin-top:76px}
 @media(max-width:600px){#irotoridori-archive #world-picturebook{scroll-margin-top:68px}}
 @media(min-width:1000px) and (max-width:1799px){.character-section{padding-top:42px;padding-bottom:32px}.character-section .section-head{margin-bottom:22px}.character-tabs{margin-bottom:22px}.character-dossier{min-height:590px}.dossier-visual{height:625px}.dossier-copy{padding-top:25px;margin-top:0}}
-

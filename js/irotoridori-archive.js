@@ -108,6 +108,7 @@
     dossier.classList.remove('is-changing');
     dossier.classList.add('is-entering');
     dossier.setAttribute('aria-busy', 'false');
+    document.dispatchEvent(new CustomEvent('trilogy-person-change', {detail:{id:person.id}}));
   }
   personTabs.forEach(tab => tab.addEventListener('click', () => showPerson(tab)));
   keyboardTabs(personTabs);
@@ -180,4 +181,3 @@
     $$('.section-reveal').forEach(section => observer.observe(section));
   }
 })();
-

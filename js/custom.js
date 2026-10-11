@@ -20,30 +20,63 @@
     addEventListener('scroll', chrome, {passive:true}); chrome();
     const cover = document.querySelector('[data-home-cover]');
     if (!cover) return;
-    let current = 'sekai', version = 0;
+    const order = Object.keys(works), interval = 12000;
+    let current = 'sekai', version = 0, timer = 0, deadline = 0;
+    let remaining = interval, clockVersion = 0, userPaused = false, inView = true, movieOpen = false;
     const feedback = document.createElement('p');
     feedback.className = 'archive-feedback'; feedback.setAttribute('role', 'status'); feedback.hidden = true; cover.append(feedback);
     const choices = Array.from(cover.querySelectorAll('[data-home-work]'));
-    choices.forEach(button => button.addEventListener('click', async () => {
-      const key = button.dataset.homeWork, work = works[key];
-      if (!work) return;
+    const pause = cover.querySelector('[data-home-pause]');
+    const progress = cover.querySelector('[data-home-progress]');
+    const blocked = () => userPaused || !inView || document.hidden || movieOpen;
+    function clock(reset = false) {
+      const tick = ++clockVersion;
+      if (timer) {
+        remaining = Math.max(0, deadline - Date.now());
+        clearTimeout(timer); timer = 0;
+      }
+      if (reset) {
+        remaining = interval;
+        if (progress) {
+          progress.style.animation = 'none';
+          void progress.offsetWidth;
+          progress.style.animation = '';
+        }
+      }
+      cover.dataset.homeCycle = blocked() ? 'paused' : 'playing';
+      if (pause) {
+        pause.setAttribute('aria-pressed', String(userPaused));
+        pause.setAttribute('aria-label', userPaused ? '继续自动切换主题' : '暂停自动切换主题');
+        pause.querySelector('span').textContent = userPaused ? '▶' : 'Ⅱ';
+      }
+      if (!blocked()) {
+        deadline = Date.now() + remaining;
+        timer = setTimeout(async () => {
+          timer = 0;
+          await switchWork(order[(order.indexOf(current) + 1) % order.length]);
+          if (tick === clockVersion) clock(true);
+        }, remaining);
+      }
+    }
+    async function switchWork(key) {
+      const work = works[key];
+      if (!work) return false;
       const next = ++version;
       cover.classList.remove('is-switching');
       feedback.hidden = true;
-      if (current === key) return;
-      const images = ['logo','scene','sprite'].map(field => {
+      if (current === key) return true;
+      const loaded = await Promise.all(['logo','scene','sprite'].map(field => {
         const img = new Image(); img.src = asset(work[field]);
         return img.decode().then(() => img.naturalWidth > 0).catch(() => false);
-      });
-      const loaded = await Promise.all(images);
-      if (version !== next) return;
+      }));
+      if (version !== next) return false;
       if (loaded.some(ok => !ok)) {
         feedback.textContent = '这组原作画面暂时未能载入，请稍后重试。'; feedback.hidden = false;
-        return;
+        return false;
       }
       cover.classList.add('is-switching');
       await new Promise(resolve => setTimeout(resolve, reduced.matches ? 0 : 180));
-      if (version !== next) return;
+      if (version !== next) return false;
       current = key;
       cover.dataset.homeWorkCurrent = key;
       cover.querySelector('[data-home-scene]').src = asset(work.scene);
@@ -56,26 +89,87 @@
         brand.querySelector('img').src = asset(work.logo);
         brand.querySelector('img').alt = '风津之滨 · ' + work.label;
       }
-      choices.forEach(item => item.setAttribute('aria-pressed', String(item === button)));
+      choices.forEach(item => item.setAttribute('aria-pressed', String(item.dataset.homeWork === key)));
       cover.classList.remove('is-switching');
+      return true;
+    }
+    choices.forEach(button => button.addEventListener('click', async () => {
+      // Manual selection gets a full reading interval before the next theme.
+      const selection = ++clockVersion;
+      if (timer) clearTimeout(timer); timer = 0;
+      await switchWork(button.dataset.homeWork);
+      if (selection === clockVersion) clock(true);
     }));
+    pause?.addEventListener('click', () => { userPaused = !userPaused; clock(); });
+    document.addEventListener('visibilitychange', () => clock());
+    if ('IntersectionObserver' in window) {
+      new IntersectionObserver(entries => {
+        inView = entries[0].isIntersecting; clock();
+      }, {threshold: .2}).observe(cover);
+    }
+    clock(true);
     const opener = document.getElementById('home-opening-button');
     opener?.addEventListener('click', () => {
+      if (document.querySelector('.opening-dialog[open]')) return;
+      movieOpen = true; clock();
       const dialog = document.createElement('dialog');
       dialog.className = 'opening-dialog';
       dialog.setAttribute('aria-label', works[current].label + '开场影片');
-      const close = document.createElement('button');
-      close.type = 'button'; close.textContent = '关闭开场 ×'; close.className = 'opening-close';
+      const toolbar = document.createElement('div'); toolbar.className = 'opening-toolbar';
+      const title = document.createElement('p'); title.textContent = works[current].label + ' · OPENING';
+      const fullscreen = document.createElement('button'); fullscreen.type = 'button';
+      fullscreen.className = 'opening-fullscreen'; fullscreen.textContent = '全屏 ⛶';
+      fullscreen.setAttribute('aria-label', '进入影片全屏');
+      const skip = document.createElement('button'); skip.type = 'button';
+      skip.textContent = 'SKIP ／ 跳过 →'; skip.className = 'opening-close';
+      skip.setAttribute('aria-label', '跳过开场影片');
       const player = document.createElement('video');
       player.controls = true; player.playsInline = true; player.preload = 'none';
       player.src = '/video/' + works[current].video;
-      dialog.append(close, player); document.body.append(dialog);
-      const finish = () => { player.pause(); dialog.close(); };
-      close.addEventListener('click', finish);
+      const status = document.createElement('p'); status.className = 'opening-status';
+      status.textContent = '正在载入开场…'; status.setAttribute('role', 'status');
+      const retry = document.createElement('button'); retry.type = 'button';
+      retry.className = 'opening-retry'; retry.textContent = '重新播放'; retry.hidden = true;
+      toolbar.append(title, fullscreen, skip);
+      dialog.append(player, toolbar, status, retry); document.body.append(dialog);
+      let wasFullscreen = false;
+      const finish = () => { player.pause(); if (dialog.open) dialog.close(); };
+      const enterFullscreen = () => {
+        if (dialog.requestFullscreen && !document.fullscreenElement) {
+          dialog.requestFullscreen().catch(() => {});
+        }
+      };
+      const fullscreenChanged = () => {
+        if (document.fullscreenElement === dialog) {
+          wasFullscreen = true; fullscreen.hidden = true;
+        } else if (wasFullscreen && dialog.open) finish();
+      };
+      document.addEventListener('fullscreenchange', fullscreenChanged);
+      skip.addEventListener('click', finish);
+      fullscreen.addEventListener('click', enterFullscreen);
       player.addEventListener('ended', finish);
-      dialog.addEventListener('click', event => { if (event.target === dialog) finish(); });
-      dialog.addEventListener('close', () => { player.pause(); dialog.remove(); opener.focus(); });
-      dialog.showModal(); close.focus(); player.play().catch(() => {});
+      player.addEventListener('playing', () => {status.hidden = true; retry.hidden = true;});
+      player.addEventListener('waiting', () => {status.textContent = '正在缓冲…'; status.hidden = false;});
+      player.addEventListener('error', () => {
+        status.textContent = '开场影片暂时未能载入。可以重试，或跳过继续浏览。';
+        status.hidden = false; retry.hidden = false;
+      });
+      const play = () => player.play().catch(() => {
+        if (!dialog.open) return;
+        status.textContent = '点击重新播放以开始影片，或跳过继续浏览。';
+        status.hidden = false; retry.hidden = false;
+      });
+      retry.addEventListener('click', () => { player.load(); play(); });
+      dialog.addEventListener('cancel', event => {event.preventDefault(); finish();});
+      dialog.addEventListener('close', () => {
+        player.pause();
+        document.removeEventListener('fullscreenchange', fullscreenChanged);
+        if (document.fullscreenElement === dialog) document.exitFullscreen().catch(() => {});
+        player.removeAttribute('src'); player.load();
+        dialog.remove(); movieOpen = false; clock(true); opener.focus({preventScroll:true});
+      });
+      dialog.showModal(); skip.focus();
+      enterFullscreen(); play();
     });
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', ready);
@@ -83,16 +177,21 @@
 })();
 
 document.addEventListener('DOMContentLoaded', () => {
-    if (document.body.classList.contains('world-home') || document.getElementById('irotoridori-archive')) return;
     const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (!finePointer || reduceMotion) return;
-
-    document.body.classList.add('custom-cursor-enabled');
+    if (!finePointer || document.getElementById('shinku-cursor-container')) return;
+    // Hide the system pointer only after the user's actual cursor image loads.
+    const image = new Image(); image.src = '/img/Shinku猫猫鼠标光标.png';
+    image.decode().then(() => {
+        if (image.naturalWidth) document.body.classList.add('custom-cursor-available');
+    }).catch(() => {});
+    if (reduceMotion) return;
 
     // --- 1. 创建并挂载所有虚拟元素 ---
     const cursorContainer = document.createElement('div');
     cursorContainer.id = 'shinku-cursor-container';
+    cursorContainer.hidden = true;
+    cursorContainer.setAttribute('aria-hidden', 'true');
     const cursor = document.createElement('div');
     cursor.id = 'shinku-cursor';
     cursorContainer.appendChild(cursor);
@@ -100,6 +199,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const canvas = document.createElement('canvas');
     canvas.id = 'cursor-star-canvas';
+    canvas.setAttribute('aria-hidden', 'true');
     document.body.appendChild(canvas);
     const ctx = canvas.getContext('2d');
     if (!ctx) {
@@ -131,6 +231,11 @@ document.addEventListener('DOMContentLoaded', () => {
         mouseX = e.clientX;
         mouseY = e.clientY;
         
+        const parent = document.querySelector('dialog[open]') || document.body;
+        if (cursorContainer.parentNode !== parent) { parent.append(cursorContainer, canvas); }
+        const available = document.body.classList.contains('custom-cursor-available');
+        cursorContainer.hidden = !available;
+        document.body.classList.toggle('custom-cursor-enabled', available);
         cursorContainer.style.transform = `translate(${mouseX}px, ${mouseY}px)`;
 
         // 随机生成高级粒子 (控制生成频率)
@@ -165,7 +270,7 @@ document.addEventListener('DOMContentLoaded', () => {
         text.innerText = words[Math.floor(Math.random() * words.length)];
         text.style.left = (e.clientX + 25) + 'px'; // 考虑到光标变大了，文字往右下躲一点
         text.style.top = (e.clientY + 25) + 'px';
-        document.body.appendChild(text);
+        (document.querySelector('dialog[open]') || document.body).appendChild(text);
 
         setTimeout(() => text.remove(), 1200);
     });
@@ -235,8 +340,19 @@ document.addEventListener('DOMContentLoaded', () => {
         if (particles.length) animationFrame = requestAnimationFrame(renderParticles);
     }
 
+    const hideCursor = () => {
+        cursorContainer.hidden = true;
+        document.body.classList.remove('custom-cursor-enabled');
+        cursor.classList.remove('cursor-clicked');
+    };
+    document.addEventListener('mouseleave', hideCursor);
+    window.addEventListener('blur', hideCursor);
+    document.addEventListener('close', () => {
+        document.body.append(cursorContainer, canvas); hideCursor();
+    }, true);
     document.addEventListener('visibilitychange', () => {
         if (document.hidden) {
+            hideCursor();
             if (animationFrame) cancelAnimationFrame(animationFrame);
             animationFrame = 0;
             particles = [];
@@ -244,4 +360,3 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 });
-
