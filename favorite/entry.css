@@ -1,0 +1,22 @@
+/* A short light curtain follows the official entrance rhythm. The site's
+   feather and place-name make this an adaptation rather than a copied loader. */
+.entry-curtain{display:none;position:fixed;inset:0;z-index:120;background:#fff;pointer-events:none;align-items:center;justify-content:center;flex-direction:column;gap:12px;color:#7a929e;font-family:var(--serif);letter-spacing:.3em}
+.entry-curtain img{width:66px;height:86px;object-fit:contain;filter:brightness(.5);opacity:.65;transform:rotate(-20deg)}
+body.is-entering .entry-curtain{display:flex;animation:curtain-part 800ms ease both 300ms}
+body.is-entering .opening-line{animation:arrival-type 800ms ease both 1100ms}
+body.is-entering .opening-logo{animation:arrival-light 800ms ease both 1600ms}
+body.is-entering .opening h1{animation:arrival-type 700ms ease both 1850ms}
+body.is-entering .opening-actions,body.is-entering .opening-play{animation:arrival-type 700ms ease both 2100ms}
+body.is-entering .opening-portrait{animation:arrival-character 900ms ease both 1500ms}
+body.is-entering .site-header{animation:arrival-light 700ms ease both 1200ms}
+.opening.is-theme-changing .opening-logo{animation:theme-light 700ms ease both}
+.opening.is-theme-changing .opening-portrait{animation:theme-character 700ms ease both}
+.story-clue{border-bottom:1px dotted color-mix(in srgb,var(--accent),transparent 30%);transition:color 200ms,text-shadow 200ms;cursor:pointer}
+.story-clue:hover,.story-clue:focus-visible{color:#25809b;text-shadow:0 0 9px #b8e9ed;outline:1px dotted var(--accent);outline-offset:3px}
+@keyframes curtain-part{from{opacity:1}to{opacity:0;visibility:hidden}}
+@keyframes arrival-type{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes arrival-light{from{opacity:0;filter:blur(4px)}to{opacity:1;filter:blur(0)}}
+@keyframes arrival-character{from{opacity:0;transform:translateX(-16px)}to{opacity:1;transform:none}}
+@keyframes theme-light{from{opacity:.35}to{opacity:1}}
+@keyframes theme-character{from{opacity:0;transform:translateX(-12px)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){.entry-curtain{display:none!important}.opening.is-theme-changing .opening-logo,.opening.is-theme-changing .opening-portrait{animation:none}}
